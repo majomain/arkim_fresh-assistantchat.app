@@ -1,0 +1,289 @@
+/* assistant loader start */
+.assistant-loader {
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    display: inline-block;
+    position: relative;
+    border: 3px solid;
+    border-color: var(--foreground) var(--foreground) transparent;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+.assistant-loader::after {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    border: 3px solid;
+    border-color: transparent var(--primary) var(--primary);
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    animation: rotationBack 0.5s linear infinite;
+    transform-origin: center center;
+}
+
+@keyframes rotation {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes rotationBack {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+/* assistant loader end */
+
+
+/* ── pop-up / pop-down ───────────────────────────────────────────────────── */
+.pop-up {
+    animation: popUp 0.25s ease-out forwards;
+}
+
+@keyframes popUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.pop-down {
+    animation: popDown 0.25s ease-out forwards;
+}
+
+@keyframes popDown {
+    from { opacity: 1; transform: translateY(0)    scale(1);    }
+    to   { opacity: 0; transform: translateY(20px) scale(0.97); }
+}
+
+
+/* ── textarea animations ─────────────────────────────────────────────────── */
+.textarea-slide-down {
+    animation: textareaSlideDown 0.25s ease-out forwards;
+}
+
+@keyframes textareaSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0);     }
+}
+
+.textarea-slide-up {
+    animation: textareaSlideUp 0.2s ease-out forwards;
+}
+
+@keyframes textareaSlideUp {
+    from { transform: translateY(20px); }
+    to   { transform: translateY(0);    }
+}
+
+
+/* ── message entrance ────────────────────────────────────────────────────── */
+/* used in Messages.tsx for each new bubble */
+@keyframes message-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+
+/* ── streaming pencil ────────────────────────────────────────────────────── */
+@keyframes writing-move {
+    0%   { transform: translateX(0px)  rotate(-5deg); }
+    30%  { transform: translateX(8px)  rotate(-8deg); }
+    60%  { transform: translateX(16px) rotate(-5deg); }
+    80%  { transform: translateX(22px) rotate(-8deg); }
+    90%  { transform: translateX(24px) rotate(-5deg); }
+    100% { transform: translateX(0px)  rotate(-5deg); }
+}
+
+@keyframes draw-line {
+    0%   { width: 0px;  opacity: 0; }
+    10%  {              opacity: 1; }
+    85%  { width: 24px; opacity: 1; }
+    95%  { width: 24px; opacity: 0; }
+    100% { width: 0px;  opacity: 0; }
+}
+
+.writing-animation {
+    animation: writing-move 2s ease-in-out infinite;
+    transform-origin: bottom center;
+    display: inline-block;
+    position: relative;
+}
+
+.writing-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.writing-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    height: 1.5px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.5;
+    animation: draw-line 2s ease-in-out infinite;
+}
+
+
+/* ── streaming cursor (blinking | at end of live response) ──────────────── */
+@keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+}
+
+.streaming-cursor::after {
+    content: '▋';
+    display: inline-block;
+    margin-left: 1px;
+    font-size: 0.85em;
+    vertical-align: baseline;
+    color: var(--primary);
+    animation: blink-cursor 0.85s step-start infinite;
+}
+
+
+/* ── thinking / step animations ─────────────────────────────────────────── */
+@keyframes thinking-dot {
+    0%, 80%, 100% { opacity: 0.2; transform: scaleY(0.8); }
+    40%            { opacity: 1;   transform: scaleY(1.2); }
+}
+
+@keyframes step-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes pop-check {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
+@keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0px  color-mix(in srgb, var(--color-tab) 40%, transparent); }
+    100% { box-shadow: 0 0 0 5px  color-mix(in srgb, var(--color-tab)  0%, transparent); }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ARKIM BRANDED LOADER  (spec §8, ported from loader-handoff/loader.css)
+   Two stacked copies of the mark PNG:
+     base = dim "empty screw"
+     fill = accent mark, revealed via clip-path
+       indeterminate → highlight band sweeps top→bottom, looping (1.6s)
+       determinate   → fills top→bottom by --pct (screw driving in)
+   ───────────────────────────────────────────────────────────────────────── */
+.amark {
+    position: relative;
+    flex: none;
+    display: inline-block;
+}
+.amark-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    user-select: none;
+}
+.amark-base {
+    filter: grayscale(1) brightness(1.05);
+    opacity: 0.30;
+}
+
+/* indeterminate: accent band sweeps top→bottom */
+.amark[data-mode="indeterminate"] .amark-fill {
+    animation: amark-drive 1.6s cubic-bezier(.5, .05, .5, .95) infinite;
+}
+@keyframes amark-drive {
+    0%   { clip-path: inset(0 0 100% 0); opacity: 0.4; }
+    12%  { opacity: 1; }
+    18%  { clip-path: inset(0 0 62% 0); }
+    50%  { clip-path: inset(31% 0 31% 0); opacity: 1; }
+    82%  { clip-path: inset(62% 0 0 0); }
+    88%  { opacity: 1; }
+    100% { clip-path: inset(100% 0 0 0); opacity: 0.4; }
+}
+/* soft trailing glow for depth */
+.amark[data-mode="indeterminate"] .amark-glow {
+    opacity: 0.35;
+    filter: blur(1px);
+    animation: amark-drive 1.6s cubic-bezier(.5, .05, .5, .95) infinite;
+    animation-delay: 0.2s;
+}
+
+/* determinate: reveal top→bottom by --pct */
+.amark[data-mode="determinate"] .amark-fill {
+    clip-path: inset(0 0 calc(100% - var(--pct, 0%)) 0);
+    transition: clip-path 0.55s cubic-bezier(.3, .9, .3, 1);
+}
+
+/* compositions */
+.loader-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+}
+.loader-block .lb-label {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 17px;
+    color: var(--muted-col);
+    letter-spacing: 0.2px;
+}
+.loader-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+}
+.loader-inline .li-label {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted-col);
+}
+.loader-pct {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.loader-pct .lp-num {
+    font-size: 26px;
+    font-weight: 200;
+    letter-spacing: -0.5px;
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+}
+.loader-pct .lp-num b {
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--muted-col);
+    margin-left: 1px;
+}
+
+/* respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .amark[data-mode="indeterminate"] .amark-fill,
+    .amark[data-mode="indeterminate"] .amark-glow {
+        animation: none;
+    }
+    .amark[data-mode="indeterminate"] .amark-fill {
+        clip-path: inset(31% 0 31% 0);
+        opacity: 0.6;
+    }
+}
