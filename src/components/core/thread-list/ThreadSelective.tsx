@@ -1,25 +1,26 @@
 'use client';
+
+import { useAsset } from '@/hooks/use-asset';
 import { useChat } from '@/hooks/use-chat';
+import { useThread } from '@/hooks/use-thread';
 import clsx from 'clsx';
-import {
-    Box,
-    Loader2,
-    PackageCheck,
-    PackageOpen,
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+
+import { ToolboxIcon } from '@/components/core/icons/ToolboxIcon';
 import { useSidebar } from '@/components/ui/sidebar';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+
 import { truncateTitle } from '@/utils/string';
+
 import { cn } from '@/lib/utils';
+
 import ThreadSelectiveChat from './ThreadSelectiveChat';
-import { useAsset } from '@/hooks/use-asset';
-import { useThread } from '@/hooks/use-thread';
 
 export default function ThreadSelective() {
     // is device mobile
@@ -28,11 +29,7 @@ export default function ThreadSelective() {
     const { processingThreads, processedThreads } = useChat();
 
     // runtime data
-    const {
-        isAssetThreadListLoading,
-        assetList,
-        currentAssetId,
-    } = useAsset();
+    const { isAssetThreadListLoading, assetList, currentAssetId } = useAsset();
 
     const { currentThreadId } = useThread();
 
@@ -50,7 +47,8 @@ export default function ThreadSelective() {
     const activeAssetRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (!activeAssetRef.current || !scrollRef.current || currentThreadId) return;
+        if (!activeAssetRef.current || !scrollRef.current || currentThreadId)
+            return;
 
         activeAssetRef.current.scrollIntoView({
             block: 'nearest',
@@ -64,83 +62,77 @@ export default function ThreadSelective() {
                 <div className={cn('flex flex-col items-stretch gap-1')}>
                     {assetList.map((asset) => (
                         <div
-                            ref={asset.id === currentAssetId ? activeAssetRef : null}
+                            ref={
+                                asset.id === currentAssetId
+                                    ? activeAssetRef
+                                    : null
+                            }
                             key={asset.id}
                             className="relative flex flex-col items-stretch gap-1"
                         >
-
                             <div
                                 className={clsx(
                                     'sticky top-0 z-1 bg-card flex-1 hover:bg-sidebar-accent group/assetTab',
                                     'rounded-md flex items-center justify-between text-sm cursor-pointer',
                                     {
-                                        'bg-sidebar-accent font-medium': asset.id === currentAssetId,
-                                    }
+                                        'bg-sidebar-accent font-medium':
+                                            asset.id === currentAssetId,
+                                    },
                                 )}
                             >
                                 <Tooltip delayDuration={600}>
-                                    <TooltipTrigger className='flex flex-row items-center w-full' asChild>
+                                    <TooltipTrigger
+                                        className="flex flex-row items-center w-full"
+                                        asChild
+                                    >
                                         <div>
                                             <div
-                                                className="w-full py-2 px-2 flex flex-row items-center gap-2" onClick={() => {
-                                                    const redirectPath = currentAssetId ===
-                                                        asset.id &&
-                                                        currentThreadId === null ?
-                                                        '/' :
-                                                        `/asset?id=${asset.id}`;
+                                                className="w-full py-2 px-2 flex flex-row items-center gap-2"
+                                                onClick={() => {
+                                                    const redirectPath =
+                                                        currentAssetId ===
+                                                            asset.id &&
+                                                        currentThreadId === null
+                                                            ? '/'
+                                                            : `/asset?id=${asset.id}`;
 
                                                     router.push(redirectPath);
-                                                    if (isMobile) toggleSidebar();
-                                                }}>
-                                                {isAssetProcessing(
-                                                    asset.id,
-                                                ) &&
-                                                    asset.id !== currentAssetId ? (
-                                                    <PackageOpen
-                                                        className={cn(
-                                                            'size-4',
-                                                            {
-                                                                'group-hover/assetTab:text-foreground text-sidebar-primary-foreground':
-                                                                    asset.id === currentAssetId && !currentThreadId
-                                                            }
-                                                        )}
-                                                    />
-                                                ) : isAssetProcessed(asset.id) &&
-                                                    asset.id !== currentAssetId ? (
-                                                    <PackageCheck
-                                                        className={cn(
-                                                            'size-4',
-                                                            {
-                                                                'group-hover/assetTab:text-foreground text-sidebar-primary-foreground':
-                                                                    asset.id === currentAssetId && !currentThreadId
-                                                            }
-                                                        )}
-                                                    />
-                                                ) : asset.id === currentAssetId ? (
-                                                    <PackageOpen
-                                                        className={cn(
-                                                            'size-4',
-                                                            {
-                                                                'group-hover/assetTab:text-sidebar-foreground text-sidebar-primary-foreground':
-                                                                    asset.id === currentAssetId
-                                                            }
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Box
-                                                        className={cn(
-                                                            'size-4 group-hover/assetTab:text-foreground'
-                                                        )}
-                                                    />
-                                                )}
+                                                    if (isMobile)
+                                                        toggleSidebar();
+                                                }}
+                                            >
+                                                <ToolboxIcon
+                                                    open={
+                                                        asset.id ===
+                                                            currentAssetId ||
+                                                        isAssetProcessing(
+                                                            asset.id,
+                                                        ) ||
+                                                        isAssetProcessed(
+                                                            asset.id,
+                                                        )
+                                                    }
+                                                    className={cn(
+                                                        'size-4 group-hover/assetTab:text-foreground',
+                                                        {
+                                                            'text-sidebar-primary-foreground':
+                                                                asset.id ===
+                                                                currentAssetId,
+                                                        },
+                                                    )}
+                                                />
 
                                                 {truncateTitle(asset.name, 22)}
                                             </div>
 
                                             {currentAssetId === asset.id &&
-                                                isAssetThreadListLoading ? (
+                                            isAssetThreadListLoading ? (
                                                 <p className="py-2 px-2 !text-sidebar-foreground flex flex-row items-center">
-                                                    <Loader2 width={20} height={20} className='animate-spin text-sidebar-primary-foreground' />
+                                                    <Loader2
+                                                        width={20}
+                                                        height={20}
+                                                        className="animate-spin text-sidebar-primary-foreground"
+                                                    />
                                                 </p>
                                             ) : null}
                                         </div>
@@ -150,10 +142,10 @@ export default function ThreadSelective() {
                                             side={isMobile ? 'top' : 'right'}
                                         >
                                             {asset.name}
-                                        </TooltipContent>)}
+                                        </TooltipContent>
+                                    )}
                                 </Tooltip>
                             </div>
-
 
                             <ThreadSelectiveChat
                                 threads={asset.threads}

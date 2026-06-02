@@ -1,187 +1,213 @@
 'use client';
 
-import { MessagesSquareIcon, RefreshCcw } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import Search from '@/components/core/filters/Search';
-import { Skeleton } from '@/components/ui/skeleton';
-import CardView from './CardView';
-import TableView from './TableView';
-import { useAsset } from "@/hooks/use-asset";
-import { useLocation } from "@/hooks/use-location";
-import { errorToast, successToast } from "@/components/ui/sonner";
-import messagingService from "@/services/api/messagingService";
-import { useChat } from "@/hooks/use-chat";
-import { useThread } from "@/hooks/use-thread";
-import { ThreadAction, ThreadDetailList, ThreadStatus } from "@/types/equipment/thread";
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionHeader, AccordionItem } from '@/components/ui/accordian';
-import { useDebounce } from '@/hooks/use-debounce';
+import { useAsset } from '@/hooks/use-asset';
+import { useLocation } from '@/hooks/use-location';
+import messagingService from '@/services/api/messagingService';
+import { ThreadDetail, ThreadDetailList } from '@/types/equipment/thread';
+import { ChevronRight, MessageSquare } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+
+import { errorToast } from '@/components/ui/sonner';
+
+// Relative time matching the design ("3 days ago" · "Last week" · "Apr 28").
+function relTime(iso: string): string {
+    const d = new Date(iso);
+    const mins = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    if (days < 14) return 'Last week';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 export default function Chats() {
-    // runtime utils
-    const { currentAssetId, currentAsset } = useAsset();
+    const { currentAssetId } = useAsset();
     const { selectedLocation } = useLocation();
-    const { isThreadProcessing, closeThread, reportThread } = useThread();
-    const { removeProcessedThread, processingThreads, processedThreads } = useChat();
+    const router = useRouter();
 
-    // is data loading flag
-    const [isDataLoading, setIsDataLoading] = useState<boolean>(false);
-    // thread list
+    const [isLoading, setIsLoading] = useState(false);
     const [threadList, setThreadList] = useState<ThreadDetailList>([]);
 
-    // search value
-    const [search, setSearch] = useState<string>('');
-    // status filter
-    const [status, setStatus] = useState<'all' | ThreadStatus>('all');
-
-    const debouncedSearch = useDebounce(search, 400);
-    const isTyping = search !== debouncedSearch;
-
-    // get list of threads
     const getThreads = useCallback(async () => {
         try {
             if (selectedLocation && currentAssetId) {
-                setIsDataLoading(true);
-                const response = await messagingService.getThreads(selectedLocation?.id ?? '', currentAssetId, status === 'all' ? null : status, debouncedSearch);
-
+                setIsLoading(true);
+                const response = await messagingService.getThreads(
+                    selectedLocation?.id ?? '',
+                    currentAssetId,
+                    null,
+                    null,
+                );
                 setThreadList(response);
             }
         } catch (error: any) {
             errorToast({ title: 'Error', description: error.message });
         } finally {
-            setIsDataLoading(false);
+            setIsLoading(false);
         }
-    }, [selectedLocation, currentAssetId, currentAsset?.threads, status, debouncedSearch]);
+    }, [selectedLocation, currentAssetId]);
 
-    // action for the thread
-    async function action(action: ThreadAction, threadTitle: string, threadId: string) {
-        let result = false;
-        if (action === 'close') {
-            result = await closeThread(threadId);
-        }
-
-        if (action === 'report') {
-            result = await reportThread(threadId);
-        }
-
-        if (result) {
-            removeProcessedThread(threadId);
-            successToast({ title: 'Success', description: `${threadTitle} has been ${action === 'close' ? 'closed' : 'reported'}.` });
-            setThreadList((prev) => prev.filter((thread) => thread.threadId != threadId));
-        }
-    }
-
-    // get the date from utc timestamp
-    function getDateFromTimestamp(timestamp: string) {
-        const date = new Date(timestamp);
-
-        return date.toLocaleString("en-CA", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true
-        })
-            .replace(",", "");
-    }
-
-    // get threads only when location and current asset is set
     useEffect(() => {
         getThreads();
     }, [getThreads]);
 
-    useEffect(() => {
-        setStatus('all');
-        setSearch('');
-    }, [currentAssetId]);
+    function openThread(thread: ThreadDetail) {
+        router.push(`/thread?id=${thread.threadId}`);
+    }
 
-    return <div className="w-full bento px-6 py-4">
-        <Accordion>
-            <AccordionItem hideBorder={true} defaultOpen={false}>
-                <AccordionHeader>
-                    <div className="flex flex-row gap-1 items-center text-sm font-medium">
-                        <MessagesSquareIcon className="size-5" />
-                        Threads
-                        {isDataLoading ? (
-                            <Skeleton className="size-4" />
-                        ) : (
-                            <span>
-                                (
-                                {threadList
-                                    ? threadList.length
-                                    : 0}
-                                )
-                            </span>
-                        )}
-                    </div>
-                </AccordionHeader>
-                <AccordionContent smoothHide={true}>
-                    <div className='w-full flex justify-end mt-2 mb-4'>
-                        <div className='flex flex-row items-center gap-2'>
-                            <Tooltip>
-                                <TooltipTrigger asChild disabled={isDataLoading || isTyping}>
-                                    <Button variant='outline' size='icon' onClick={() => {
-                                        if (!isDataLoading) {
-                                            setSearch('');
-                                            getThreads();
-                                        }
-                                    }}><RefreshCcw className='size-4' /></Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    Refresh threads
-                                </TooltipContent>
-                            </Tooltip>
+    return (
+        <div
+            className="w-full"
+            style={{
+                border: '1px solid var(--border-col)',
+                borderRadius: 6,
+                background: 'var(--surface)',
+                overflow: 'hidden',
+            }}
+        >
+            {/* Header */}
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '12px 14px',
+                    borderBottom: '1px solid var(--border-soft)',
+                }}
+            >
+                <MessageSquare
+                    size={16}
+                    style={{ color: 'var(--muted-col)' }}
+                />
+                <span
+                    style={{
+                        fontSize: 13.5,
+                        fontWeight: 600,
+                        color: 'var(--text)',
+                    }}
+                >
+                    Threads
+                </span>
+                <span
+                    style={{
+                        marginLeft: 'auto',
+                        minWidth: 22,
+                        textAlign: 'center',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--muted-col)',
+                        background: 'var(--surface-2)',
+                        borderRadius: 999,
+                        padding: '1px 8px',
+                    }}
+                >
+                    {isLoading ? '·' : threadList.length}
+                </span>
+            </div>
 
-                            <Select
-                                defaultValue="all"
-                                value={status}
-                                onValueChange={async (value) => {
-                                    setStatus(value as 'all' | ThreadStatus);
+            {/* Rows */}
+            {isLoading ? (
+                <div style={{ padding: '6px 0' }}>
+                    {[0, 1, 2].map((i) => (
+                        <div key={i} style={{ padding: '11px 14px' }}>
+                            <span
+                                className="sk-block"
+                                style={{
+                                    display: 'block',
+                                    width: '70%',
+                                    height: 13,
+                                    marginBottom: 6,
                                 }}
-                                disabled={isDataLoading || isTyping}
-                            >
-                                <SelectTrigger className="w-fit bg-sidebar-accent hover:bg-accent hover:text-accent-foreground focus:ring-0">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="open">Open</SelectItem>
-                                    <SelectItem value="closed">Closed</SelectItem>
-                                    <SelectItem value="reported">Reported</SelectItem>
-                                </SelectContent>
-                            </Select>
-
-                            <Search
-                                search={search}
-                                setSearch={setSearch}
+                            />
+                            <span
+                                className="sk-block"
+                                style={{
+                                    display: 'block',
+                                    width: '45%',
+                                    height: 11,
+                                }}
                             />
                         </div>
-                    </div>
-
-                    <TableView
-                        action={action}
-                        isThreadProcessing={isThreadProcessing}
-                        processingThreads={processingThreads}
-                        processedThreads={processedThreads}
-                        filteredThreadList={threadList}
-                        isDataLoading={isDataLoading || isTyping}
-                        getDateFromTimestamp={getDateFromTimestamp}
-                    />
-
-                    <CardView
-                        action={action}
-                        isThreadProcessing={isThreadProcessing}
-                        processingThreads={processingThreads}
-                        processedThreads={processedThreads}
-                        filterThreadList={threadList}
-                        isDataLoading={isDataLoading || isTyping}
-                        getDateFromTimestamp={getDateFromTimestamp}
-                    />
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-    </div>
+                    ))}
+                </div>
+            ) : threadList.length ? (
+                threadList.map((thread, i) => (
+                    <button
+                        key={thread.threadId}
+                        onClick={() => openThread(thread)}
+                        className="group/th"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '11px 14px',
+                            cursor: 'pointer',
+                            background: 'transparent',
+                            border: 'none',
+                            borderTop:
+                                i > 0 ? '1px solid var(--border-soft)' : 'none',
+                            transition: 'background 120ms',
+                        }}
+                        onMouseEnter={(e) =>
+                            (e.currentTarget.style.background =
+                                'var(--surface-2)')
+                        }
+                        onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = 'transparent')
+                        }
+                    >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <p
+                                style={{
+                                    fontSize: 13.5,
+                                    fontWeight: 600,
+                                    color: 'var(--text)',
+                                    lineHeight: 1.3,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {thread.workOrderTitle ?? thread.title}
+                            </p>
+                            <p
+                                style={{
+                                    fontSize: 12,
+                                    color: 'var(--muted-col)',
+                                    marginTop: 2,
+                                }}
+                            >
+                                {thread.messageCount} message
+                                {thread.messageCount !== 1 ? 's' : ''} ·{' '}
+                                {relTime(thread.createdAtUtc)}
+                            </p>
+                        </div>
+                        <ChevronRight
+                            size={15}
+                            style={{ color: 'var(--muted-2)', flexShrink: 0 }}
+                            className="group-hover/th:!text-foreground"
+                        />
+                    </button>
+                ))
+            ) : (
+                <p
+                    className="serif"
+                    style={{
+                        fontSize: 13.5,
+                        color: 'var(--muted-col)',
+                        padding: '18px 14px',
+                    }}
+                >
+                    No threads yet.
+                </p>
+            )}
+        </div>
+    );
 }
