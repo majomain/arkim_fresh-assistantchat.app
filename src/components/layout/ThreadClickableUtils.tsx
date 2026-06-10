@@ -1,23 +1,20 @@
 'use client';
 
-import {
-    Box,
-    ChevronRight,
-    Folder,
-} from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
-import { LoadingSpinner } from '../ui/loading-spinner';
-import { useThread } from '@/hooks/use-thread';
-import { successToast } from '../ui/sonner';
 import { useChat } from '@/hooks/use-chat';
-import { useRouter } from 'next/navigation';
+import { useThread } from '@/hooks/use-thread';
 import { ThreadAction, ThreadDetail } from '@/types/equipment/thread';
+import { Box, ChevronRight, Folder } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import { Button } from '../ui/button';
+import { LoadingSpinner } from '../ui/loading-spinner';
+import { successToast } from '../ui/sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 export default function ThreadClickableUtils({
     assetName,
-    currentThread
+    currentThread,
 }: {
     assetName: string;
     currentThread?: ThreadDetail | null;
@@ -32,7 +29,11 @@ export default function ThreadClickableUtils({
     const { removeProcessedThread, processingThreads } = useChat();
 
     // action for the thread
-    async function action(action: ThreadAction, threadTitle: string, threadId: string) {
+    async function action(
+        action: ThreadAction,
+        threadTitle: string,
+        threadId: string,
+    ) {
         let result = false;
         if (action === 'close') {
             result = await closeThread(threadId);
@@ -44,7 +45,10 @@ export default function ThreadClickableUtils({
 
         if (result) {
             removeProcessedThread(threadId);
-            successToast({ title: 'Success', description: `${threadTitle} has been ${action === 'close' ? 'closed' : 'reported'}.` });
+            successToast({
+                title: 'Success',
+                description: `${threadTitle} has been ${action === 'close' ? 'closed' : 'reported'}.`,
+            });
             router.replace(`/asset?id=${currentThread?.assetId}`);
         }
     }
@@ -54,29 +58,29 @@ export default function ThreadClickableUtils({
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Link href={`/asset?id=${currentThread?.assetId}`}>
-                        <Button variant="ghost" size="icon" className='hover:!bg-muted'>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="hover:!bg-muted"
+                        >
                             <Box className="size-4" />
                         </Button>
                     </Link>
                 </TooltipTrigger>
-                <TooltipContent align="start">
-                    {assetName}
-                </TooltipContent>
+                <TooltipContent align="start">{assetName}</TooltipContent>
             </Tooltip>
 
             <ChevronRight className="size-4" />
 
-            {
-                isThreadProcessing(currentThread?.threadId ?? '')
-                    ?
-                    <div className='ml-1.5'>
-                        <LoadingSpinner />
-                    </div>
-                    :
-                    <p className="ml-2 text-sm font-medium line-clamp-1">
-                        {currentThread?.workOrderTitle ?? currentThread?.title}
-                    </p>
-            }
+            {isThreadProcessing(currentThread?.threadId ?? '') ? (
+                <div className="ml-1.5">
+                    <LoadingSpinner />
+                </div>
+            ) : (
+                <p className="ml-2 text-sm font-medium line-clamp-1">
+                    {currentThread?.workOrderTitle ?? currentThread?.title}
+                </p>
+            )}
         </div>
     );
 }

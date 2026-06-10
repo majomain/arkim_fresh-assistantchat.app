@@ -1,7 +1,11 @@
 import { OIDC_CONFIG, STORAGE_KEYS } from '@/config/constant';
+import {
+    clearDevAuthSession,
+    isAuthBypassEnabled,
+    setupDevAuthSession,
+} from '@/config/devAuthBypass';
 import authService from '@/services/api/authService';
 import { clearOidcStorage } from '@/storage/oidcStorage';
-import { clearAllDraft } from '@/utils/draft-mechanism';
 import {
     InMemoryWebStorage,
     User,
@@ -9,6 +13,8 @@ import {
     UserManagerSettings,
     WebStorageStateStore,
 } from 'oidc-client-ts';
+
+import { clearAllDraft } from '@/utils/draft-mechanism';
 
 class OidcAuthService {
     private userManager: UserManager | null = null;
@@ -24,7 +30,10 @@ class OidcAuthService {
     }
 
     public isSigningOut(): boolean {
-        return this.signOutInFlight || localStorage.getItem(OIDC_CONFIG.SIGNOUT_FLAG_KEY) === '1';
+        return (
+            this.signOutInFlight ||
+            localStorage.getItem(OIDC_CONFIG.SIGNOUT_FLAG_KEY) === '1'
+        );
     }
 
     public clearSignOutFlag(): void {
@@ -32,12 +41,20 @@ class OidcAuthService {
         try {
             localStorage.removeItem(OIDC_CONFIG.SIGNOUT_FLAG_KEY);
         } catch (error) {
-            console.error('Failed to remove signout flag from session storage:', error);
+            console.error(
+                'Failed to remove signout flag from session storage:',
+                error,
+            );
         }
     }
 
     public resetUserManager(): void {
         this.userManager = null;
+    }
+
+    private isValidCognitoEnv(value: string | undefined): value is string {
+        if (!value?.trim()) return false;
+        return !value.includes('<') && !value.includes('>');
     }
 
     private buildSettings(): UserManagerSettings {
@@ -48,9 +65,12 @@ class OidcAuthService {
             process.env.NEXT_PUBLIC_COGNITO_APP_CLIENT_ID ||
             process.env.REACT_APP_COGNITO_APP_CLIENT_ID;
 
-        if (!cognitoIssuerUrl || !cognitoClientId) {
+        if (
+            !this.isValidCognitoEnv(cognitoIssuerUrl) ||
+            !this.isValidCognitoEnv(cognitoClientId)
+        ) {
             throw new Error(
-                'Cognito configuration is missing from environment variables',
+                'Cognito configuration is missing from environment variables. Copy .env.template to .env and set NEXT_PUBLIC_COGNITO_ISSUER_URL and NEXT_PUBLIC_COGNITO_APP_CLIENT_ID, then restart the dev server.',
             );
         }
 
@@ -84,7 +104,9 @@ class OidcAuthService {
             process.env.REACT_APP_COGNITO_APP_CLIENT_ID;
         if (!cognitoClientId) return null;
 
-        const logoutUri = encodeURIComponent(`${window.location.origin}${OIDC_CONFIG.PATHS.LOGIN}`);
+        const logoutUri = encodeURIComponent(
+            `${window.location.origin}${OIDC_CONFIG.PATHS.LOGIN}`,
+        );
 
         return `${OIDC_CONFIG.COGNITO_DOMAIN}/logout?client_id=${cognitoClientId}&logout_uri=${logoutUri}`;
     }
@@ -124,12 +146,26 @@ class OidcAuthService {
     }
 
     public async signIn(redirectUrl?: string): Promise<void> {
+        if (isAuthBypassEnabled()) {
+            setupDevAuthSession();
+            const target =
+                redirectUrl ||
+                localStorage.getItem(STORAGE_KEYS.OIDC_REDIRECT_URL) ||
+                '/';
+            localStorage.removeItem(STORAGE_KEYS.OIDC_REDIRECT_URL);
+            window.location.href = target;
+            return;
+        }
+
         try {
             const userManager = this.getUserManager();
 
             // Store the redirect URL in localStorage instead of state
             if (redirectUrl) {
-                localStorage.setItem(STORAGE_KEYS.OIDC_REDIRECT_URL, redirectUrl);
+                localStorage.setItem(
+                    STORAGE_KEYS.OIDC_REDIRECT_URL,
+                    redirectUrl,
+                );
             }
 
             await userManager.signinRedirect();
@@ -146,7 +182,7 @@ class OidcAuthService {
         // Clear signout flag if it was set
         try {
             localStorage.removeItem(OIDC_CONFIG.SIGNOUT_FLAG_KEY);
-        } catch { }
+        } catch {}
         this.signOutInFlight = false;
 
         try {
@@ -195,6 +231,14 @@ class OidcAuthService {
      * 5. Cognito redirects to /login → OidcProtectedRoute clears flag → redirects to Cognito login page
      */
     public async signOut(): Promise<void> {
+        if (isAuthBypassEnabled()) {
+            await clearAllDraft();
+            clearDevAuthSession();
+            this.clearAuthToken();
+            window.location.replace('/login');
+            return;
+        }
+
         await clearAllDraft();
         console.log('[OIDC signOut] Starting signOut...');
         if (this.signOutInFlight) {
@@ -205,7 +249,7 @@ class OidcAuthService {
         try {
             localStorage.setItem(OIDC_CONFIG.SIGNOUT_FLAG_KEY, '1');
             console.log('[OIDC signOut] Flag set in localStorage');
-        } catch { }
+        } catch {}
 
         console.log('[OIDC signOut] Calling backend logout...');
         try {

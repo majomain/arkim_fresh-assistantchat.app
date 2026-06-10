@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useState, useRef, useCallback } from 'react';
 import messagingService from '@/services/api/messagingService';
+import { useCallback, useRef, useState } from 'react';
 
 interface UseSpeechToTextReturn {
     isListening: boolean;
@@ -46,10 +46,14 @@ export function useSpeechToText(): UseSpeechToTextReturn {
             setError(null);
 
             // get mic
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+            });
             streamRef.current = stream;
 
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm',
+            });
             mediaRecorderRef.current = mediaRecorder;
 
             const token = await messagingService.getDeepgramToken();
@@ -57,7 +61,7 @@ export function useSpeechToText(): UseSpeechToTextReturn {
             // open WebSocket with API key as subprotocol
             const socket = new WebSocket(
                 `wss://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&punctuate=true`,
-                ['bearer', token]
+                ['bearer', token],
             );
             socketRef.current = socket;
 
@@ -89,10 +93,11 @@ export function useSpeechToText(): UseSpeechToTextReturn {
             socket.onclose = () => {
                 setIsListening(false);
             };
-
         } catch (err: any) {
             if (err?.name === 'NotAllowedError') {
-                setError('Microphone access denied. Please enable permissions.');
+                setError(
+                    'Microphone access denied. Please enable permissions.',
+                );
             } else if (err?.name === 'NotFoundError') {
                 setError('No microphone found.');
             } else {

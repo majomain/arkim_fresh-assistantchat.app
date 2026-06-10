@@ -1,18 +1,21 @@
 'use client';
+
+import { useAssetBroadcast } from '@/hooks/broadcasts/use-asset-broadcast';
+import { useAsset } from '@/hooks/use-asset';
 import { useDraggableCard } from '@/hooks/use-draggable-card';
+import { useLocation } from '@/hooks/use-location';
+import equipmentService from '@/services/api/equipmentService';
+import { AssetDetail, AssetWithThreads } from '@/types/equipment/asset';
 import { useEffect, useState } from 'react';
+
 import { errorToast } from '@/components/ui/sonner';
+
 import DraggableCard from '../../ui/DraggableCard';
 import AssetExist from './stages/AssetExist';
 import AssetForm from './stages/AssetForm';
 import Initiate from './stages/Initiate';
 import SearchAsset from './stages/SearchAsset';
 import Success from './stages/Success';
-import equipmentService from '@/services/api/equipmentService';
-import { useLocation } from '@/hooks/use-location';
-import { useAsset } from '@/hooks/use-asset';
-import { AssetDetail, AssetWithThreads } from '@/types/equipment/asset';
-import { useAssetBroadcast } from '@/hooks/broadcasts/use-asset-broadcast';
 
 type StageType =
     | 'asset-form'
@@ -81,18 +84,18 @@ export default function OnboardFloatingCard() {
                 model: model.trim() || '',
                 archived: null,
                 archivedBy: null,
-                archivedAt: null
+                archivedAt: null,
             };
 
             // create new asset
-            await equipmentService.create(payload)
+            await equipmentService.create(payload);
 
             const updatedAssets = await refreshAssetList();
 
             const assetExists = updatedAssets.find(
                 (ast) =>
                     ast?.manufacturer.includes(make.trim()) &&
-                    ast?.model.includes(model.trim())
+                    ast?.model.includes(model.trim()),
             );
 
             if (assetExists) {
@@ -119,8 +122,10 @@ export default function OnboardFloatingCard() {
             setStage('search');
 
             // filter the asset list using the asset id
-            const assetExists = assetList.find((ast: AssetWithThreads) =>
-                ast?.manufacturer.includes(make.trim()) && ast?.model.includes(model.trim())
+            const assetExists = assetList.find(
+                (ast: AssetWithThreads) =>
+                    ast?.manufacturer.includes(make.trim()) &&
+                    ast?.model.includes(model.trim()),
             );
 
             // if asset exists then switch to that asset else move on to next stage
@@ -130,7 +135,6 @@ export default function OnboardFloatingCard() {
             } else {
                 setStage('initiate');
             }
-
         } catch (error: any) {
             return;
         }
@@ -190,9 +194,7 @@ export default function OnboardFloatingCard() {
             )}
 
             {stage === 'initiate' && (
-                <Initiate
-                    asset={`${make.trim()} ${model.trim()}`}
-                />
+                <Initiate asset={`${make.trim()} ${model.trim()}`} />
             )}
 
             {stage === 'success' && <Success assetId={foundAssetId ?? ''} />}

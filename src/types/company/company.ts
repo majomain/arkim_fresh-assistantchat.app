@@ -8,4 +8,3 @@ export interface CompanyDetail {
 }
 
 export type CompanyDetailList = CompanyDetail[];
-

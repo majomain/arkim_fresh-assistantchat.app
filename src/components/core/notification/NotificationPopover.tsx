@@ -1,30 +1,44 @@
 'use client';
 
+import { useChat } from '@/hooks/use-chat';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Bell, BrushCleaning, Clock, Inbox, MessageSquare, X } from 'lucide-react';
+import {
+    Bell,
+    BrushCleaning,
+    Clock,
+    Inbox,
+    MessageSquare,
+    X,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { useChat } from '@/hooks/use-chat';
-import { useRouter } from 'next/navigation';
 
 dayjs.extend(relativeTime);
 
 function NotificationPopover() {
-    const { responseAlerts, removeResponseAlert, removeProcessedThread } = useChat();
+    const { responseAlerts, removeResponseAlert, removeProcessedThread } =
+        useChat();
     const router = useRouter();
     const [open, setOpen] = useState(false);
 
     const responseAlertsCount = responseAlerts.length;
-    const sortedAlerts = responseAlerts.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
+    const sortedAlerts = responseAlerts.sort(
+        (a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0),
+    );
 
     const clearAll = () => {
-        responseAlerts.forEach((alert) => { removeResponseAlert(alert.id); removeProcessedThread(alert.threadId) });
+        responseAlerts.forEach((alert) => {
+            removeResponseAlert(alert.id);
+            removeProcessedThread(alert.threadId);
+        });
     };
 
     const handleNavigate = (threadId: string, alertId: string) => {
@@ -36,11 +50,7 @@ function NotificationPopover() {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative"
-                >
+                <Button variant="ghost" size="icon" className="relative">
                     <Bell className="w-5 h-5" />
 
                     {responseAlertsCount > 0 && (
@@ -76,22 +86,29 @@ function NotificationPopover() {
                 {/* Body */}
                 {responseAlertsCount === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
-                         <Inbox className="size-12 text-muted-foreground/60" strokeWidth={1.2} />
+                        <Inbox
+                            className="size-12 text-muted-foreground/60"
+                            strokeWidth={1.2}
+                        />
                         <div>
-                            <p className="text-sm font-medium">No new notifications</p>
+                            <p className="text-sm font-medium">
+                                No new notifications
+                            </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                               You are all caught up!
+                                You are all caught up!
                             </p>
                         </div>
                     </div>
                 ) : (
-                    <div className='max-h-80 overflow-y-auto scrollable'>
+                    <div className="max-h-80 overflow-y-auto scrollable">
                         <div className="divide-y">
                             {sortedAlerts.map((alert) => (
                                 <div
                                     key={alert.id}
                                     className="group relative flex items-start gap-3 p-3 hover:bg-muted/30 cursor-pointer"
-                                    onClick={() => handleNavigate(alert.threadId, alert.id)}
+                                    onClick={() =>
+                                        handleNavigate(alert.threadId, alert.id)
+                                    }
                                 >
                                     {/* Icon */}
                                     <div className="flex-shrink-0 mt-0.5 p-1.5 rounded-full bg-sidebar-primary group-hover:bg-muted">
@@ -107,8 +124,8 @@ function NotificationPopover() {
                                             {alert.description}
                                         </p>
 
-                                        <p className='text-xs flex justify-start gap-1 items-center mt-2'>
-                                            <Clock className='size-3' />
+                                        <p className="text-xs flex justify-start gap-1 items-center mt-2">
+                                            <Clock className="size-3" />
                                             {dayjs(alert.timestamp).fromNow()}
                                         </p>
                                     </div>
@@ -121,7 +138,9 @@ function NotificationPopover() {
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             removeResponseAlert(alert.id);
-                                            removeProcessedThread(alert.threadId);
+                                            removeProcessedThread(
+                                                alert.threadId,
+                                            );
                                         }}
                                         aria-label="Dismiss notification"
                                     >

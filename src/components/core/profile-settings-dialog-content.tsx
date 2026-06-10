@@ -16,7 +16,7 @@ export enum SettingsItem {
 
 const sidebarItems = [
     { id: SettingsItem.General, label: 'General', icon: Settings },
-    { id: SettingsItem.Notifications, label: 'Notifications', icon: Bell }
+    { id: SettingsItem.Notifications, label: 'Notifications', icon: Bell },
 ];
 
 export const ProfileSettingsDialogContent = ({
@@ -69,14 +69,15 @@ export const ProfileSettingsDialogContent = ({
                                 className={clsx(
                                     `w-full flex justify-start items-center gap-3 font-normal hover:bg-accent group/setting`,
                                     {
-                                        'bg-accent font-medium': selectedSection === item.id,
+                                        'bg-accent font-medium':
+                                            selectedSection === item.id,
                                     },
                                 )}
                             >
-                                <Icon className={`size-4 ${selectedSection === item.id ? 'text-primary' : 'text-muted-foreground group-hover/setting:text-foreground'}`} />
-                                <span className="">
-                                    {item.label}
-                                </span>
+                                <Icon
+                                    className={`size-4 ${selectedSection === item.id ? 'text-primary' : 'text-muted-foreground group-hover/setting:text-foreground'}`}
+                                />
+                                <span className="">{item.label}</span>
                             </Button>
                         );
                     })}

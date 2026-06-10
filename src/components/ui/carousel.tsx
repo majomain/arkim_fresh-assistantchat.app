@@ -1,8 +1,9 @@
 'use client';
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import * as React from 'react';
+
+import { cn } from '@/lib/utils';
 
 type CarouselContextType = {
     current: number;
@@ -15,7 +16,8 @@ const CarouselContext = React.createContext<CarouselContextType | null>(null);
 
 function useCarousel() {
     const ctx = React.useContext(CarouselContext);
-    if (!ctx) throw new Error('Carousel components must be used inside <Carousel>');
+    if (!ctx)
+        throw new Error('Carousel components must be used inside <Carousel>');
     return ctx;
 }
 
@@ -53,42 +55,26 @@ function Carousel({
         <CarouselContext.Provider
             value={{ current, setCurrent, count, registerItems }}
         >
-            <div className='w-full flex flex-row gap-2 items-center'>
-                {
-                    moveLeft
-                        ?
-                        <CarouselPrevious />
-                        :
-                        null
-                }
+            <div className="w-full flex flex-row gap-2 items-center">
+                {moveLeft ? <CarouselPrevious /> : null}
                 <div
                     data-slot="carousel"
-                    className={cn(
-                        'w-lg relative overflow-hidden'
-                    )}
+                    className={cn('w-lg relative overflow-hidden')}
                 >
                     {children}
                 </div>
-                {
-                    moveRight
-                        ?
-                        <CarouselNext />
-                        :
-                        null
-                }
+                {moveRight ? <CarouselNext /> : null}
             </div>
-            {
-                indicator
-                    ?
-                    <CarouselIndicators />
-                    :
-                    null
-            }
+            {indicator ? <CarouselIndicators /> : null}
         </CarouselContext.Provider>
     );
 }
 
-function CarouselContent({ children }: { children: React.ReactNode | React.ReactNode[] }) {
+function CarouselContent({
+    children,
+}: {
+    children: React.ReactNode | React.ReactNode[];
+}) {
     const { current, setCurrent, registerItems, count } = useCarousel();
 
     const startX = React.useRef<number | null>(null);
@@ -127,7 +113,7 @@ function CarouselContent({ children }: { children: React.ReactNode | React.React
         <div
             data-slot="carousel-content"
             className={cn(
-                'flex transition-transform duration-500 ease-in-out select-none'
+                'flex transition-transform duration-500 ease-in-out select-none',
             )}
             style={{ transform: `translateX(-${current * 100}%)` }}
             onTouchStart={handleTouchStart}
@@ -143,15 +129,24 @@ function CarouselContent({ children }: { children: React.ReactNode | React.React
     );
 }
 
-
-function CarouselItem({ children, index }: { children: React.ReactNode, index?: number }) {
+function CarouselItem({
+    children,
+    index,
+}: {
+    children: React.ReactNode;
+    index?: number;
+}) {
     const { current } = useCarousel();
     return (
         <div
             data-slot="carousel-item"
             className={cn(
-                "w-full h-full flex items-center justify-center transition-all duration-700",
-                index ? (current === index ? "scale-100 opacity-100" : "scale-0 opacity-0 ") : ''
+                'w-full h-full flex items-center justify-center transition-all duration-700',
+                index
+                    ? current === index
+                        ? 'scale-100 opacity-100'
+                        : 'scale-0 opacity-0 '
+                    : '',
             )}
         >
             {children}
@@ -195,10 +190,7 @@ function CarouselIndicators({ className }: { className?: string }) {
     const { current, setCurrent, count } = useCarousel();
     return (
         <div
-            className={cn(
-                'flex justify-center gap-2 mt-3',
-                className,
-            )}
+            className={cn('flex justify-center gap-2 mt-3', className)}
             data-slot="carousel-indicators"
         >
             {Array.from({ length: count }).map((_, i) => (
@@ -207,7 +199,9 @@ function CarouselIndicators({ className }: { className?: string }) {
                     onClick={() => setCurrent(i)}
                     className={cn(
                         'size-2 rounded-full transition-all',
-                        current === i ? 'bg-primary w-4' : 'bg-transparent border-1 border-foreground',
+                        current === i
+                            ? 'bg-primary w-4'
+                            : 'bg-transparent border-1 border-foreground',
                     )}
                 />
             ))}
@@ -215,8 +209,4 @@ function CarouselIndicators({ className }: { className?: string }) {
     );
 }
 
-export {
-    Carousel,
-    CarouselContent,
-    CarouselItem
-};
+export { Carousel, CarouselContent, CarouselItem };

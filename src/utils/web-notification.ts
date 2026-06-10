@@ -5,11 +5,11 @@ const NOTIFY_KEY = 'notifications_enabled';
 
 export function enableNotification() {
     localStorage.setItem(NOTIFY_KEY, 'true');
-    Notification.requestPermission().then(permission => {
+    Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
             new Notification('Notifications enabled', {
                 body: "You're all set to receive alerts.",
-                icon: '/assets/logos/arkim.webp'
+                icon: '/assets/logos/arkim.webp',
             });
         }
     });
@@ -23,31 +23,34 @@ export function notificationsEnabled() {
     return localStorage.getItem(NOTIFY_KEY) === 'true';
 }
 
-
 export function requestNotificationPermission() {
     if (typeof window === 'undefined') return;
     if (!('Notification' in window)) return;
 
     // only request if not already granted or denied
     if (Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
+        Notification.requestPermission().then((permission) => {
             if (permission === 'granted') {
                 enableNotification();
                 new Notification('Notifications enabled', {
                     body: "You're all set to receive alerts.",
-                    icon: '/assets/logos/arkim.webp'
+                    icon: '/assets/logos/arkim.webp',
                 });
             }
         });
     }
 }
 
-export function webNotify(title: string, options?: NotificationOptions, onClick?: () => void) {
-    if (typeof window === "undefined") return;
+export function webNotify(
+    title: string,
+    options?: NotificationOptions,
+    onClick?: () => void,
+) {
+    if (typeof window === 'undefined') return;
 
-    if (!("Notification" in window)) return;
+    if (!('Notification' in window)) return;
 
-    if (Notification.permission !== "granted") return;
+    if (Notification.permission !== 'granted') return;
 
     if (!notificationsEnabled()) return;
 
@@ -60,7 +63,7 @@ export function webNotify(title: string, options?: NotificationOptions, onClick?
         if (onClick) {
             notification.onclick = (event) => {
                 onClick();
-                notification.close();  // close the notification on click
+                notification.close(); // close the notification on click
             };
         }
 

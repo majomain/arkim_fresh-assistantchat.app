@@ -1,20 +1,25 @@
-'use client'
+'use client';
 
-import { STORAGE_KEYS } from "@/config/constant";
-import { LocationContext } from "@/contexts/LocationContext";
-import { useAuth } from "@/hooks/use-auth";
-import locationService from "@/services/api/locationService";
-import { LocationDetail, LocationDetailList } from "@/types/location/location";
-import { useCallback, useEffect, useState } from "react";
+import { STORAGE_KEYS } from '@/config/constant';
+import { LocationContext } from '@/contexts/LocationContext';
+import { useAuth } from '@/hooks/use-auth';
+import locationService from '@/services/api/locationService';
+import { LocationDetail, LocationDetailList } from '@/types/location/location';
+import { useCallback, useEffect, useState } from 'react';
 
-export default function LocationProvider({ children }: { children: React.ReactNode }) {
-    // user util 
+export default function LocationProvider({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    // user util
     const { user } = useAuth();
 
     // locations list
     const [locations, setLocations] = useState<LocationDetailList>([]);
-    // current selected location 
-    const [selectedLocation, setSelectedLocation] = useState<LocationDetail | null>(null);
+    // current selected location
+    const [selectedLocation, setSelectedLocation] =
+        useState<LocationDetail | null>(null);
     // is location list loading flag
     const [isLoadingLocations, setIsLoadingLocations] = useState<boolean>(true);
 
@@ -23,7 +28,9 @@ export default function LocationProvider({ children }: { children: React.ReactNo
         try {
             setIsLoadingLocations(true);
             const locationList = await locationService.listUserLocations();
-            const list = locationList.filter((location) => user?.assignedSites.includes(location.id));
+            const list = locationList.filter((location) =>
+                user?.assignedSites.includes(location.id),
+            );
             setLocations(list);
 
             // Get stored location ID
@@ -36,8 +43,7 @@ export default function LocationProvider({ children }: { children: React.ReactNo
             if (storedLocationId) {
                 // Try to find stored location
                 locationToSelect =
-                    list.find((loc) => loc.id === storedLocationId) ||
-                    null;
+                    list.find((loc) => loc.id === storedLocationId) || null;
             }
 
             if (!locationToSelect) {
@@ -51,12 +57,14 @@ export default function LocationProvider({ children }: { children: React.ReactNo
                 }
             }
 
-            if (locationToSelect && locationToSelect.id) {
+            if (locationToSelect?.id) {
                 setSelectedLocation(locationToSelect);
                 localStorage.setItem(
                     STORAGE_KEYS.SELECTED_LOCATION_ID,
                     locationToSelect.id,
                 );
+            } else {
+                setSelectedLocation(null);
             }
         } catch (error) {
             console.error('Failed to load locations:', error);
@@ -66,28 +74,42 @@ export default function LocationProvider({ children }: { children: React.ReactNo
     }, [user]);
 
     // select a location
-    const selectLocationById = useCallback((locationId: string) => {
-        const location = locations.find((loc) => loc.id === locationId);
-        if (location) {
-            setSelectedLocation(location);
-            localStorage.setItem(STORAGE_KEYS.SELECTED_LOCATION_ID, locationId);
-        }
-    }, [locations]);
+    const selectLocationById = useCallback(
+        (locationId: string) => {
+            const location = locations.find((loc) => loc.id === locationId);
+            if (location) {
+                setSelectedLocation(location);
+                localStorage.setItem(
+                    STORAGE_KEYS.SELECTED_LOCATION_ID,
+                    locationId,
+                );
+            }
+        },
+        [locations],
+    );
 
     // Load locations when user is authenticated
     useEffect(() => {
         if (user) {
             loadLocations();
+        } else {
+            setLocations([]);
+            setSelectedLocation(null);
+            setIsLoadingLocations(false);
         }
     }, [user, loadLocations]);
 
-    return <LocationContext.Provider value={{
-        locations,
-        selectedLocation,
-        isLoadingLocations,
-        selectLocation: selectLocationById,
-        refreshLocations: loadLocations
-    }}>
-        {children}
-    </LocationContext.Provider>
+    return (
+        <LocationContext.Provider
+            value={{
+                locations,
+                selectedLocation,
+                isLoadingLocations,
+                selectLocation: selectLocationById,
+                refreshLocations: loadLocations,
+            }}
+        >
+            {children}
+        </LocationContext.Provider>
+    );
 }

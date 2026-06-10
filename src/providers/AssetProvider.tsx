@@ -1,19 +1,24 @@
-'use client'
+'use client';
 
-import { errorToast } from "@/components/ui/sonner";
-import { STORAGE_KEYS } from "@/config/constant";
-import { AssetContext } from "@/contexts/AssetContext";
-import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "@/hooks/use-location";
-import equipmentService from "@/services/api/equipmentService";
-import messagingService from "@/services/api/messagingService";
-import { AssetWithThreads } from "@/types/equipment/asset";
-import { ThreadDetail, ThreadDetailList } from "@/types/equipment/thread";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { STORAGE_KEYS } from '@/config/constant';
+import { AssetContext } from '@/contexts/AssetContext';
+import { useAuth } from '@/hooks/use-auth';
+import { useLocation } from '@/hooks/use-location';
+import equipmentService from '@/services/api/equipmentService';
+import messagingService from '@/services/api/messagingService';
+import { AssetWithThreads } from '@/types/equipment/asset';
+import { ThreadDetail, ThreadDetailList } from '@/types/equipment/thread';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
-export default function AssetProvider({ children }: { children: React.ReactNode }) {
-    // user 
+import { errorToast } from '@/components/ui/sonner';
+
+export default function AssetProvider({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    // user
     const { user } = useAuth();
     // location util
     const { selectedLocation } = useLocation();
@@ -21,15 +26,19 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
     // has bootstrapped flag
     const [hasBootstrapped, setHasBootstrapped] = useState<boolean>(false);
     // asset list loading flag
-    const [isAssetListLoading, setIsAssetListLoading] = useState<boolean>(false);
+    const [isAssetListLoading, setIsAssetListLoading] =
+        useState<boolean>(false);
     // is asset's thread list loading state flag
-    const [isAssetThreadListLoading, setIsAssetThreadListLoading] = useState<boolean>(false);
+    const [isAssetThreadListLoading, setIsAssetThreadListLoading] =
+        useState<boolean>(false);
     // asset list store
     const [assetList, setAssetList] = useState<AssetWithThreads[]>([]);
     // current asset id store
     const [currentAssetId, setCurrentAssetId] = useState<string | null>(null);
     // current asset store
-    const [currentAsset, setCurrentAsset] = useState<AssetWithThreads | null>(null);
+    const [currentAsset, setCurrentAsset] = useState<AssetWithThreads | null>(
+        null,
+    );
     // is asset detail loading
     const [isAssetLoading, setIsAssetLoading] = useState<boolean>(false);
 
@@ -56,7 +65,7 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
     async function fetchAssetList(refreshing: boolean = false) {
         if (user) {
             try {
-                setIsAssetListLoading(true)
+                setIsAssetListLoading(true);
 
                 // Get selected location ID from localStorage
                 const selectedLocationId = localStorage.getItem(
@@ -66,22 +75,20 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
                 if (!selectedLocationId) {
                     console.warn('No location selected, skipping asset fetch');
                     setAssetList([]);
-                    setIsAssetListLoading(false)
+                    setIsAssetListLoading(false);
                     return [];
                 }
 
                 // Fetch assets from equipment service
-                const data = await equipmentService.getList(
-                    selectedLocationId
-                );
+                const data = await equipmentService.getList(selectedLocationId);
 
                 // Transform AssetDetails[] to AssetWithThreads[]
-                const list: AssetWithThreads[] = data.length ? data.map(
-                    (asset) => ({
-                        ...asset,
-                        threads: [] as ThreadDetailList,
-                    }),
-                ) : [];
+                const list: AssetWithThreads[] = data.length
+                    ? data.map((asset) => ({
+                          ...asset,
+                          threads: [] as ThreadDetailList,
+                      }))
+                    : [];
 
                 if (
                     currentAssetId &&
@@ -97,10 +104,16 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
                     router.replace('/');
                 }
 
-                const listWithThreads = await Promise.all(list.map(async (asset) => {
-                    const data = await messagingService.getThreadsByAsset(asset.id, selectedLocation?.id ?? '', 'open');
-                    return { ...asset, threads: data };
-                }));
+                const listWithThreads = await Promise.all(
+                    list.map(async (asset) => {
+                        const data = await messagingService.getThreadsByAsset(
+                            asset.id,
+                            selectedLocation?.id ?? '',
+                            'open',
+                        );
+                        return { ...asset, threads: data };
+                    }),
+                );
 
                 // sort assets alphabetically by name
                 listWithThreads.sort((a, b) => a.name.localeCompare(b.name));
@@ -157,8 +170,7 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
                     setCurrentAsset(currAst ?? null);
                 }
             }
-        }
-        catch (error: any) {
+        } catch (error: any) {
             errorToast({ title: 'Error', description: error.message });
         } finally {
             setIsAssetLoading(false);
@@ -170,10 +182,7 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
         const asset = assetList.find((a) => a.id === threadData.assetId);
 
         if (asset) {
-            const updatedThreads = [
-                threadData,
-                ...(asset?.threads ?? []),
-            ];
+            const updatedThreads = [threadData, ...(asset?.threads ?? [])];
             const updatedCurrentAsset = {
                 ...asset,
                 threads: updatedThreads,
@@ -270,10 +279,10 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
                 return {
                     ...asset,
                     threads: asset.threads.filter(
-                        (t) => t.threadId !== threadId
+                        (t) => t.threadId !== threadId,
                     ),
                 };
-            })
+            }),
         );
 
         // update current asset
@@ -282,9 +291,7 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
 
             return {
                 ...prev,
-                threads: prev.threads.filter(
-                    (t) => t.threadId !== threadId
-                ),
+                threads: prev.threads.filter((t) => t.threadId !== threadId),
             };
         });
     }
@@ -308,7 +315,11 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
                 fetchAssetList();
             } else {
                 // unset current data if not asset
-                if ((!pathname.includes('/asset') && !pathname.includes('/thread') && !pathname.includes('/new-chat'))) {
+                if (
+                    !pathname.includes('/asset') &&
+                    !pathname.includes('/thread') &&
+                    !pathname.includes('/new-chat')
+                ) {
                     setCurrentAssetId(null);
                     setCurrentAsset(null);
                 }
@@ -329,24 +340,28 @@ export default function AssetProvider({ children }: { children: React.ReactNode 
         }
     }, [selectedLocation]);
 
-    return <AssetContext.Provider value={{
-        hasBootstrapped,
-        isAssetListLoading,
-        isAssetThreadListLoading,
-        isAssetLoading,
-        assetList,
-        currentAsset,
-        currentAssetId,
-        setAssetList,
-        setCurrentAssetId,
-        setCurrentAsset,
-        refreshAssetList,
-        addNewThreadToList,
-        updateThreadTitle,
-        placeThreadToTop,
-        removeThread,
-        getAssetFromListById
-    }}>
-        {children}
-    </AssetContext.Provider>
+    return (
+        <AssetContext.Provider
+            value={{
+                hasBootstrapped,
+                isAssetListLoading,
+                isAssetThreadListLoading,
+                isAssetLoading,
+                assetList,
+                currentAsset,
+                currentAssetId,
+                setAssetList,
+                setCurrentAssetId,
+                setCurrentAsset,
+                refreshAssetList,
+                addNewThreadToList,
+                updateThreadTitle,
+                placeThreadToTop,
+                removeThread,
+                getAssetFromListById,
+            }}
+        >
+            {children}
+        </AssetContext.Provider>
+    );
 }

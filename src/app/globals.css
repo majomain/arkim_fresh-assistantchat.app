@@ -40,7 +40,7 @@
   /* ── Fonts ──────────────────────────────────────────────────────────────── */
   /* Avenir Next (premium) → Mulish (Google) → IBM Plex Sans (bundled) → system */
   --font-sans:  var(--font-mulish), 'Avenir Next', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  --font-serif: var(--font-sans);
   --font-mono:  ui-monospace, 'IBM Plex Mono', monospace;
   --font-ibm:   var(--font-mulish), 'Avenir Next', 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 
@@ -89,6 +89,14 @@
   --color-status-done:     var(--st-done);
   --color-status-cancel:   var(--st-cancel);
 
+  /* Attention — focal / action-required sections */
+  --color-attention:            var(--attention-bg);
+  --color-attention-foreground: var(--attention-text);
+  --color-attention-border:     var(--attention-border);
+
+  /* Instant grey hover for clickable surfaces */
+  --color-interactive-hover: var(--interactive-hover);
+
   /* Skeleton shimmer */
   @keyframes shimmer {
     0%   { transform: translateX(-100%); }
@@ -98,50 +106,56 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LIGHT THEME  (warm, branded — NOT generic white)
-   bg #F4F0E9 · text #1A1916 · accent #3C7AAC · radius 3px
+   LIGHT THEME  (high-contrast daylight — clean white + brand blue)
+   bg #FFFFFF · text #111827 · accent #3C7AAC · radius 3px
    next-themes convention: :root = light (no class), .dark = dark (dark class)
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   --radius: 0.1875rem; /* 3px */
 
-  --scrollbar:       rgba(180, 175, 165, 0.5);
-  --scrollbar-hover: rgba(60, 122, 172, 0.45);
-  --btn-shadow:      rgba(0, 0, 0, 0.08);
+  --scrollbar:       rgba(156, 163, 175, 0.55);
+  --scrollbar-hover: rgba(60, 122, 172, 0.55);
+  --btn-shadow:      rgba(0, 0, 0, 0.06);
+  --interactive-hover: rgba(107, 114, 128, 0.22);
+  --card-hover-overlay: rgba(100, 116, 139, 0.08);
 
-  /* ── Spec §1.2 Light — exact values ─────────────────────────────────────── */
-  --bg:            #F4F0E9;
-  --bg-grad:       radial-gradient(120% 80% at 50% -8%, #FBF8F2 0%, #F1ECE3 60%);
-  --surface:       #FBF9F4;
-  --surface-2:     #F6F2EA;
+  /* ── Light — daylight / outdoor readability ─────────────────────────────── */
+  --bg:            #FFFFFF;
+  --bg-grad:       #FFFFFF;
+  --surface:       #FFFFFF;
+  --surface-2:     #F5F7FA;
   --surface-hi:    #FFFFFF;
-  --border-col:    #E2DBCE;
-  --border-soft:   #EAE4D8;
-  --text:          #1A1916;
-  --text-strong:   #0F0E0C;
-  --muted-col:     #79736A;
-  --muted-2:       #948D81;
+  --border-col:    #E5E7EB;
+  --border-soft:   #F3F4F6;
+  --text:          #111827;
+  --text-strong:   #030712;
+  --muted-col:     #6B7280;
+  --muted-2:       #9CA3AF;
   --accent-col:    #3C7AAC;
-  --accent-text:   #356C9B;
-  --accent-fill:   rgba(60, 122, 172, 0.08);
-  --accent-fill-hi:rgba(60, 122, 172, 0.15);
-  --accent-line:   rgba(60, 122, 172, 0.28);
-  --on-accent:     #FBF9F4;
-  --sk:            #E9E2D4;
-  --scrim:         rgba(20, 18, 14, 0.35);
-  --card-shadow-val: 0 1px 2px rgba(40,33,20,0.05), 0 6px 18px -12px rgba(40,33,20,0.10);
+  --accent-text:   #2F6A99;
+  --accent-fill:   rgba(60, 122, 172, 0.10);
+  --accent-fill-hi:#EFF6FC;
+  --accent-line:   rgba(60, 122, 172, 0.32);
+  --attention-bg:     var(--accent-fill-hi);
+  --attention-border: var(--accent-col);
+  --attention-text:   var(--accent-col);
+  --attention-ring:   var(--accent-line);
+  --on-accent:     #FFFFFF;
+  --sk:            #F3F4F6;
+  --scrim:         rgba(17, 24, 39, 0.40);
+  --card-shadow-val: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
 
   /* ── Semantic status tokens (light values) ───────────────────────────────── */
   --st-overdue:      oklch(0.53 0.150 33);
   --st-open:         oklch(0.56 0.105 70);
   --st-progress:     oklch(0.50 0.100 245);
   --st-done:         oklch(0.50 0.080 158);
-  --st-cancel:       var(--muted-col);
+  --st-cancel:       oklch(0.52 0.160 27);
   --st-overdue-fill: color-mix(in srgb, oklch(0.53 0.150 33)  10%, transparent);
   --st-open-fill:    color-mix(in srgb, oklch(0.56 0.105 70)  10%, transparent);
   --st-progress-fill:color-mix(in srgb, oklch(0.50 0.100 245) 10%, transparent);
   --st-done-fill:    color-mix(in srgb, oklch(0.50 0.080 158) 10%, transparent);
-  --st-cancel-fill:  rgba(121, 115, 106, 0.10);
+  --st-cancel-fill:  color-mix(in srgb, oklch(0.52 0.160 27) 10%, transparent);
 
   /* ── Tailwind aliases ───────────────────────────────────────────────────── */
   --background:          var(--bg);
@@ -171,12 +185,12 @@
   --chart-4:             oklch(0.627 0.265 303.9);
   --chart-5:             oklch(0.645 0.246 16.439);
 
-  --sidebar:                    #EDE8DF;
+  --sidebar:                    #FFFFFF;
   --sidebar-foreground:         var(--text);
   --sidebar-primary:            var(--accent-fill);
-  --sidebar-primary-foreground: var(--accent-text);
-  --sidebar-accent:             var(--surface-2);
-  --sidebar-accent-foreground:  var(--muted-col);
+  --sidebar-primary-foreground: var(--accent-col);
+  --sidebar-accent:             var(--accent-fill-hi);
+  --sidebar-accent-foreground:  var(--accent-col);
   --sidebar-border:             var(--border-col);
   --sidebar-ring:               var(--accent-col);
 }
@@ -192,6 +206,8 @@
   --scrollbar:       rgba(42, 42, 42, 0.85);
   --scrollbar-hover: rgba(74, 138, 191, 0.4);
   --btn-shadow:      rgba(0, 0, 0, 0.8);
+  --interactive-hover: rgba(245, 242, 237, 0.14);
+  --card-hover-overlay: rgba(245, 242, 237, 0.06);
 
   /* ── Spec §1.1 Dark — exact values ─────────────────────────────────────── */
   --bg:            #0A0A0A;
@@ -210,6 +226,10 @@
   --accent-fill:   rgba(74, 138, 191, 0.10);
   --accent-fill-hi:rgba(74, 138, 191, 0.20);
   --accent-line:   rgba(74, 138, 191, 0.32);
+  --attention-bg:     rgba(74, 138, 191, 0.16);
+  --attention-border: var(--accent-col);
+  --attention-text:   var(--accent-text);
+  --attention-ring:   var(--accent-line);
   --on-accent:     #0A0A0A;
   --sk:            #1F1F1F;
   --scrim:         rgba(0, 0, 0, 0.6);
@@ -220,12 +240,12 @@
   --st-open:         oklch(0.80 0.085 80);
   --st-progress:     oklch(0.70 0.085 240);
   --st-done:         oklch(0.76 0.060 158);
-  --st-cancel:       var(--muted-col);
+  --st-cancel:       oklch(0.68 0.120 27);
   --st-overdue-fill: color-mix(in srgb, oklch(0.70 0.115 38)  13%, transparent);
   --st-open-fill:    color-mix(in srgb, oklch(0.80 0.085 80)  12%, transparent);
   --st-progress-fill:color-mix(in srgb, oklch(0.70 0.085 240) 14%, transparent);
   --st-done-fill:    color-mix(in srgb, oklch(0.76 0.060 158) 12%, transparent);
-  --st-cancel-fill:  rgba(138, 133, 124, 0.10);
+  --st-cancel-fill:  color-mix(in srgb, oklch(0.68 0.120 27) 12%, transparent);
 
   /* ── Tailwind aliases ───────────────────────────────────────────────────── */
   --background:          var(--bg);
@@ -275,13 +295,13 @@
   }
 
   html {
-    /* Gradient baked onto the html root so it shows through transparent surfaces */
+    /* Page canvas — flat white in light, radial tint in dark */
     background: var(--bg-grad);
     min-height: 100%;
   }
 
   body {
-    background: transparent;   /* let html gradient show */
+    background: transparent;
     color: var(--text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -301,6 +321,62 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 @layer components {
 
+  /* ── Instant grey hover (no transition) ─────────────────────────────────── */
+  .interactive-hover {
+    transition: none;
+  }
+  .interactive-hover:hover:not(:disabled):not([aria-disabled='true']) {
+    background-color: var(--interactive-hover);
+  }
+
+  /* Subtle opacity wash for clickable bento cards (e.g. /work-orders grid) */
+  .card-hover-subtle {
+    position: relative;
+    isolation: isolate;
+    transition: none;
+  }
+  .card-hover-subtle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--card-hover-overlay);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: none;
+  }
+  .card-hover-subtle:hover::before {
+    opacity: 1;
+  }
+  .card-hover-subtle > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Queue / segment filter pills — border opacity highlight on hover */
+  .queue-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: none;
+    background: transparent;
+  }
+  .chip-hover-border {
+    border-color: color-mix(in srgb, var(--muted-col) 32%, transparent);
+    color: var(--muted-col);
+  }
+  .chip-hover-border:hover {
+    border-color: color-mix(in srgb, var(--muted-col) 72%, transparent);
+  }
+
   /* ── Card ───────────────────────────────────────────────────────────────── */
   .bento {
     background: var(--surface);
@@ -319,13 +395,13 @@
     text-transform: uppercase; color: var(--muted-col);
   }
 
-  /* Cormorant Garamond italic — editorial / empty-state accents */
+  /* Secondary copy — muted subheadings, empty states (sans, readable) */
   .serif {
-    font-family: var(--font-serif);
-    font-style: italic;
+    font-family: var(--font-sans);
+    font-style: normal;
     font-weight: 400;
   }
-  .serifi { font-family: var(--font-serif); font-style: italic; }
+  .serifi { font-family: var(--font-sans); font-style: normal; }
 
   /* ── Status pill (dot + label, filled bg) ───────────────────────────────── */
   .status-pill {
@@ -419,9 +495,70 @@
     font-size: 14.5px; font-weight: 600;
     padding: 12px 18px;
     cursor: pointer;
-    transition: background 140ms;
+    transition: none;
   }
-  .btn-ghost:hover { background: var(--surface-hi); }
+  .btn-ghost:hover { background: var(--interactive-hover); }
+
+  /* ── Attention surfaces (action-required / focal sections) ─────────────── */
+  .surface-attention {
+    background: var(--attention-bg);
+    border: 1px solid var(--attention-border);
+    border-radius: var(--radius-lg);
+  }
+  .surface-attention--bar {
+    border-left: 3px solid var(--attention-border);
+  }
+
+  .list-item-attention {
+    background: var(--attention-bg);
+    border-left: 3px solid var(--attention-border);
+  }
+
+  .list-item-selected {
+    background: var(--attention-bg);
+    border-left: 3px solid var(--attention-border);
+  }
+
+  .attention-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--attention-text);
+    background: var(--attention-bg);
+    border: 1px solid var(--attention-ring);
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .attention-icon-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 6px;
+    border-radius: 999px;
+    background: var(--attention-bg);
+    color: var(--attention-text);
+  }
+
+  .attention-icon-chip--solid {
+    border-radius: var(--radius-md);
+    background: var(--attention-border);
+    color: var(--on-accent);
+  }
+
+  .tab-chip-active {
+    background: var(--attention-bg);
+    color: var(--attention-text);
+    border-color: var(--attention-border);
+  }
+
+  .card-attention {
+    box-shadow: 0 0 0 1px var(--attention-ring);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

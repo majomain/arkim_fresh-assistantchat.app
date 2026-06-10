@@ -53,10 +53,12 @@ function TooltipContent({
                 {...props}
             >
                 {children}
-                <TooltipPrimitive.Arrow className={cn(
-                    `bg-zinc-800 fill-zinc-800`,
-                    'z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]'
-                )} />
+                <TooltipPrimitive.Arrow
+                    className={cn(
+                        `bg-zinc-800 fill-zinc-800`,
+                        'z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]',
+                    )}
+                />
             </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
     );

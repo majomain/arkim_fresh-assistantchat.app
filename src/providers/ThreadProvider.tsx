@@ -1,20 +1,26 @@
-'use client'
+'use client';
 
-import { errorToast } from "@/components/ui/sonner";
-import { ThreadContext } from "@/contexts/ThreadContext"
-import { useThreadBroadcast } from "@/hooks/broadcasts/use-thread-broadcast";
-import { useAsset } from "@/hooks/use-asset";
-import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "@/hooks/use-location";
-import messagingService from "@/services/api/messagingService";
-import { ThreadDetail } from "@/types/equipment/thread";
-import { clearDraftByThread } from "@/utils/draft-mechanism";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import ThreadRating from "@/components/core/chat/ThreadRating";
+import { ThreadContext } from '@/contexts/ThreadContext';
+import { useThreadBroadcast } from '@/hooks/broadcasts/use-thread-broadcast';
+import { useAsset } from '@/hooks/use-asset';
+import { useAuth } from '@/hooks/use-auth';
+import { useLocation } from '@/hooks/use-location';
+import messagingService from '@/services/api/messagingService';
+import { ThreadDetail } from '@/types/equipment/thread';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
-export default function ThreadProvider({ children }: { children: React.ReactNode }) {
-    // user 
+import ThreadRating from '@/components/core/chat/ThreadRating';
+import { errorToast } from '@/components/ui/sonner';
+
+import { clearDraftByThread } from '@/utils/draft-mechanism';
+
+export default function ThreadProvider({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    // user
     const { user } = useAuth();
     const { selectedLocation } = useLocation();
 
@@ -27,7 +33,9 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
     // current thread id
     const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
     // current processing threads
-    const [currentProcessingThreads, setCurrentProcessingThreads] = useState<string[] | []>([]);
+    const [currentProcessingThreads, setCurrentProcessingThreads] = useState<
+        string[] | []
+    >([]);
     // thread rating dialog state
     const [ratingThreadId, setRatingThreadId] = useState<string | null>(null);
 
@@ -41,7 +49,13 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
         : null;
 
     // asset uitls
-    const { hasBootstrapped, assetList, setCurrentAssetId, setCurrentAsset, removeThread } = useAsset();
+    const {
+        hasBootstrapped,
+        assetList,
+        setCurrentAssetId,
+        setCurrentAsset,
+        removeThread,
+    } = useAsset();
 
     // broadcast setup
     const { threadStatusUpdated } = useThreadBroadcast((event) => {
@@ -49,7 +63,7 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             removeThread(event.threadId);
             if (currentThreadId === event.threadId) {
                 setCurrentThread((prev) =>
-                    prev ? { ...prev, status: event.status } : prev
+                    prev ? { ...prev, status: event.status } : prev,
                 );
             }
         }
@@ -68,7 +82,7 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             // update the thread status so that the thread page can update UI
             if (currentThreadId === id) {
                 setCurrentThread((prev) =>
-                    prev ? { ...prev, status: 'closed' } : prev
+                    prev ? { ...prev, status: 'closed' } : prev,
                 );
             }
 
@@ -88,7 +102,9 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             }
             return false;
         } finally {
-            setCurrentProcessingThreads((prev) => prev.filter((threadId) => threadId != id));
+            setCurrentProcessingThreads((prev) =>
+                prev.filter((threadId) => threadId != id),
+            );
         }
     }
 
@@ -109,7 +125,7 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             // update the thread status so that the thread page can update UI
             if (currentThreadId === id) {
                 setCurrentThread((prev) =>
-                    prev ? { ...prev, status: 'reported' } : prev
+                    prev ? { ...prev, status: 'reported' } : prev,
                 );
             }
 
@@ -129,12 +145,16 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             }
             return false;
         } finally {
-            setCurrentProcessingThreads((prev) => prev.filter((threadId) => threadId != id));
+            setCurrentProcessingThreads((prev) =>
+                prev.filter((threadId) => threadId != id),
+            );
         }
     }
 
     function isThreadProcessing(id: string) {
-        return currentProcessingThreads.length ? currentProcessingThreads.includes(id as never) : false;
+        return currentProcessingThreads.length
+            ? currentProcessingThreads.includes(id as never)
+            : false;
     }
 
     // thread detail api
@@ -167,8 +187,7 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             }
         } catch (error: any) {
             errorToast({ title: 'Error', description: error.message });
-        }
-        finally {
+        } finally {
             setIsThreadLoading(false);
         }
     }
@@ -179,7 +198,7 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
 
         for (const asset of assetList) {
             const thread = asset.threads.find(
-                t => t.threadId === currentThreadId
+                (t) => t.threadId === currentThreadId,
             );
             if (thread) {
                 setCurrentThread(thread);
@@ -195,11 +214,12 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
             if (!pathname.includes('/thread')) {
                 setCurrentThreadId(null);
                 setCurrentThread(null);
-            }
-            else if (assetList.length) {
+            } else if (assetList.length) {
                 setCurrentThreadId(threadIdFromUrl);
 
-                const asset = assetList.find((asset) => asset.threads.find((t) => t.threadId === threadIdFromUrl));
+                const asset = assetList.find((asset) =>
+                    asset.threads.find((t) => t.threadId === threadIdFromUrl),
+                );
                 if (asset) {
                     setCurrentAssetId(asset.id);
                     setCurrentAsset(asset);
@@ -208,25 +228,29 @@ export default function ThreadProvider({ children }: { children: React.ReactNode
         }
     }, [user, hasBootstrapped, threadIdFromUrl, pathname, assetList]);
 
-    return <ThreadContext.Provider value={{
-        isThreadLoading,
-        currentThread,
-        currentThreadId,
-        currentProcessingThreads,
-        setCurrentThreadId,
-        setCurrentThread,
-        fetchThreadDetail,
-        closeThread,
-        reportThread,
-        isThreadProcessing
-    }}>
-        {children}
-        {ratingThreadId && (
-            <ThreadRating
-                threadId={ratingThreadId}
-                open={!!ratingThreadId}
-                onClose={handleRatingClose}
-            />
-        )}
-    </ThreadContext.Provider>
+    return (
+        <ThreadContext.Provider
+            value={{
+                isThreadLoading,
+                currentThread,
+                currentThreadId,
+                currentProcessingThreads,
+                setCurrentThreadId,
+                setCurrentThread,
+                fetchThreadDetail,
+                closeThread,
+                reportThread,
+                isThreadProcessing,
+            }}
+        >
+            {children}
+            {ratingThreadId && (
+                <ThreadRating
+                    threadId={ratingThreadId}
+                    open={!!ratingThreadId}
+                    onClose={handleRatingClose}
+                />
+            )}
+        </ThreadContext.Provider>
+    );
 }

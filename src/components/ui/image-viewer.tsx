@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { ZoomIn, ZoomOut } from 'lucide-react'
-import { PhotoProvider, PhotoView } from 'react-photo-view'
-import 'react-photo-view/dist/react-photo-view.css'
+import { ZoomIn, ZoomOut } from 'lucide-react';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
+import 'react-photo-view/dist/react-photo-view.css';
 
 // ─── Shared provider ──────────────────────────────────────────────────────────
 // Wrap a group of images in this so they share one viewer context.
@@ -12,8 +12,8 @@ export function ImageViewerProvider({
     children,
     onVisibleChange,
 }: {
-    children: React.ReactNode
-    onVisibleChange?: (visible: boolean) => void
+    children: React.ReactNode;
+    onVisibleChange?: (visible: boolean) => void;
 }) {
     return (
         <PhotoProvider
@@ -33,7 +33,7 @@ export function ImageViewerProvider({
         >
             {children}
         </PhotoProvider>
-    )
+    );
 }
 
 // ─── Single image ─────────────────────────────────────────────────────────────
@@ -44,8 +44,8 @@ export default function ImageViewer({
     url,
     children,
 }: {
-    url: string
-    children: React.ReactElement
+    url: string;
+    children: React.ReactElement;
 }) {
-    return <PhotoView src={url}>{children}</PhotoView>
+    return <PhotoView src={url}>{children}</PhotoView>;
 }

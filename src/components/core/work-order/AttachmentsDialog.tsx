@@ -1,12 +1,21 @@
 'use client';
 
-import ImageViewer, { ImageViewerProvider } from "@/components/ui/image-viewer";
-import useImageError from "@/hooks/use-image-error";
-import { WorkOrderDetail } from "@/types/workOrder/workOrder";
-import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import useImageError from '@/hooks/use-image-error';
+import { WorkOrderDetail } from '@/types/workOrder/workOrder';
+import { X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
-export default function AttachmentsDialog({ workOrder, children, fullWidth = false }: { workOrder: WorkOrderDetail; children: React.ReactNode; fullWidth?: boolean }) {
+import ImageViewer, { ImageViewerProvider } from '@/components/ui/image-viewer';
+
+export default function AttachmentsDialog({
+    workOrder,
+    children,
+    fullWidth = false,
+}: {
+    workOrder: WorkOrderDetail;
+    children: React.ReactNode;
+    fullWidth?: boolean;
+}) {
     const [open, setOpen] = useState(false);
     const isPhotoViewerOpen = useRef(false);
     const { handleImageError } = useImageError();
@@ -26,7 +35,10 @@ export default function AttachmentsDialog({ workOrder, children, fullWidth = fal
     return (
         <>
             {/* Trigger */}
-            <span className={`cursor-pointer ${fullWidth ? 'w-full' : ''}`} onClick={() => setOpen(true)}>
+            <span
+                className={`cursor-pointer ${fullWidth ? 'w-full' : ''}`}
+                onClick={() => setOpen(true)}
+            >
                 {children}
             </span>
 
@@ -68,23 +80,31 @@ export default function AttachmentsDialog({ workOrder, children, fullWidth = fal
                                         isPhotoViewerOpen.current = visible;
                                     }}
                                 >
-                                    {workOrder.attachments && workOrder.attachments.length > 0 &&
-                                        workOrder.attachments.map((attachment, index) => (
-                                            <div
-                                                key={`${index}-${attachment.attachmentId}`}
-                                                className="relative aspect-square rounded-md overflow-hidden border bg-muted cursor-pointer"
-                                            >
-                                                <ImageViewer url={attachment.url}>
-                                                    <img
-                                                        src={attachment.url}
-                                                        alt=""
-                                                        className="size-30 rounded object-cover border border-muted"
-                                                        onError={() => handleImageError(attachment.url)}
-                                                    />
-                                                </ImageViewer>
-                                            </div>
-                                        ))
-                                    }
+                                    {workOrder.attachments &&
+                                        workOrder.attachments.length > 0 &&
+                                        workOrder.attachments.map(
+                                            (attachment, index) => (
+                                                <div
+                                                    key={`${index}-${attachment.attachmentId}`}
+                                                    className="relative aspect-square rounded-md overflow-hidden border bg-muted cursor-pointer"
+                                                >
+                                                    <ImageViewer
+                                                        url={attachment.url}
+                                                    >
+                                                        <img
+                                                            src={attachment.url}
+                                                            alt=""
+                                                            className="size-30 rounded object-cover border border-muted"
+                                                            onError={() =>
+                                                                handleImageError(
+                                                                    attachment.url,
+                                                                )
+                                                            }
+                                                        />
+                                                    </ImageViewer>
+                                                </div>
+                                            ),
+                                        )}
                                 </ImageViewerProvider>
                             </div>
                         </div>

@@ -1,15 +1,17 @@
-'use client'
+'use client';
 
-import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+
+import { cn } from '@/lib/utils';
 
 export type SizeType = '10' | '20' | '50' | '100';
 
@@ -30,13 +32,12 @@ export default function Pagination({
     onPageChange,
     onSizeChange,
     isDataLoading,
-    className
+    className,
 }: PaginationProps) {
-
     function changePage(p: number) {
         if (p < 1 || p > totalPages) return;
         onPageChange(p);
-    };
+    }
 
     function getButtons() {
         const pages: (number | string)[] = [];
@@ -50,7 +51,7 @@ export default function Pagination({
         pages.push(1);
 
         if (startPage > 2) {
-            pages.push("...");
+            pages.push('...');
         }
 
         for (let i = startPage; i <= endPage; i++) {
@@ -58,7 +59,7 @@ export default function Pagination({
         }
 
         if (endPage < totalPages - 1) {
-            pages.push("...");
+            pages.push('...');
         }
 
         if (totalPages > 1) {
@@ -66,18 +67,19 @@ export default function Pagination({
         }
 
         return pages;
-    };
+    }
 
-
-    return <div className={cn(
-        'w-full flex flex-wrap justify-center sm:justify-end gap-3 px-1',
-        className
-    )}>
-        <div className="flex flex-row items-center gap-2">
-            {
-                isDataLoading ?
-                    <Skeleton className='h-8 w-18' />
-                    :
+    return (
+        <div
+            className={cn(
+                'w-full flex flex-wrap justify-center sm:justify-end gap-3 px-1',
+                className,
+            )}
+        >
+            <div className="flex flex-row items-center gap-2">
+                {isDataLoading ? (
+                    <Skeleton className="h-8 w-18" />
+                ) : (
                     <>
                         <p className="text-sm">Show</p>
                         <Select
@@ -97,28 +99,25 @@ export default function Pagination({
                                 <SelectItem value="100">100</SelectItem>
                             </SelectContent>
                         </Select>
-
                     </>
-            }
-        </div>
+                )}
+            </div>
 
-        <div className="flex items-center justify-between gap-0.5 sm:gap-2">
-            {
-                isDataLoading
-                    ?
+            <div className="flex items-center justify-between gap-0.5 sm:gap-2">
+                {isDataLoading ? (
                     <>
-                        <Skeleton className='size-8' />
-                        <Skeleton className='size-8' />
-                        <Skeleton className='size-8' />
+                        <Skeleton className="size-8" />
+                        <Skeleton className="size-8" />
+                        <Skeleton className="size-8" />
                     </>
-                    :
+                ) : (
                     <>
                         <button
-                            className='py-2 px-1.5 rounded-md text-sm hover:bg-sidebar-accent disabled:pointer-events-none disabled:opacity-50'
+                            className="py-2 px-1.5 rounded-md text-sm hover:bg-sidebar-accent disabled:pointer-events-none disabled:opacity-50"
                             disabled={page === 1}
                             onClick={() => changePage(page - 1)}
                         >
-                            <ChevronLeft className='size-4' />
+                            <ChevronLeft className="size-4" />
                         </button>
 
                         {getButtons().map((item, index) =>
@@ -136,24 +135,25 @@ export default function Pagination({
                                         'py-1.5 px-2.5 rounded-md text-sm',
                                         item === page
                                             ? 'bg-sidebar-accent'
-                                            : 'bg-transparent hover:bg-sidebar-accent'
+                                            : 'bg-transparent hover:bg-sidebar-accent',
                                     )}
                                     onClick={() => changePage(Number(item))}
                                 >
                                     {item}
                                 </button>
-                            )
+                            ),
                         )}
 
                         <button
-                            className='py-2 px-1.5 rounded-md text-sm hover:bg-sidebar-accent disabled:pointer-events-none disabled:opacity-50'
+                            className="py-2 px-1.5 rounded-md text-sm hover:bg-sidebar-accent disabled:pointer-events-none disabled:opacity-50"
                             disabled={page === totalPages}
                             onClick={() => changePage(page + 1)}
                         >
-                            <ChevronRight className='size-4' />
+                            <ChevronRight className="size-4" />
                         </button>
                     </>
-            }
+                )}
+            </div>
         </div>
-    </div>;
+    );
 }

@@ -2,13 +2,10 @@
 
 import { useAuthSession } from '@/hooks/api/use-auth-session';
 import { useSignOutMutation } from '@/hooks/api/use-sign-out-mutation';
-import {
-    ExternalLink,
-    HelpCircle,
-    LogOut,
-    Settings,
-} from 'lucide-react';
-import {  useState } from 'react';
+import { useVersion } from '@/hooks/use-version';
+import { ExternalLink, HelpCircle, LogOut, Settings } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -23,6 +20,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '../ui/alert-dialog';
+import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Dialog } from '../ui/dialog';
 import {
     DropdownMenu,
@@ -38,9 +36,6 @@ import {
 } from './profile-settings-dialog-content';
 import { ProfileSettingsGeneral } from './profile-settings-general';
 import { ProfileSettingsNotifications } from './profile-settings-notifications';
-import Link from 'next/link';
-import { useVersion } from '@/hooks/use-version';
-import { Avatar, AvatarFallback } from '../ui/avatar';
 
 export const ProfileDropdown = () => {
     const { data: session } = useAuthSession();
@@ -83,15 +78,17 @@ export const ProfileDropdown = () => {
                 asChild
                 onClick={() => setIsProfileDropdownOpen(true)}
             >
-                <Button variant="ghost" size="icon" className="h-8 w-8 bg-[#84B7C8] text-black rounded-full hover:rounded-md hover:bg-[#84B7C8]">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 bg-[#84B7C8] text-black rounded-full hover:rounded-md hover:bg-[#84B7C8]"
+                >
                     <Avatar>
                         <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-                className="w-50" align="end"
-            >
+            <DropdownMenuContent className="w-50" align="end">
                 {session?.user && (
                     <>
                         <DropdownMenuLabel className="font-normal">
@@ -147,9 +144,7 @@ export const ProfileDropdown = () => {
                 <AlertDialogTrigger asChild></AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Sign Out
-                        </AlertDialogTitle>
+                        <AlertDialogTitle>Sign Out</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to sign out?
                         </AlertDialogDescription>
@@ -170,8 +165,8 @@ export const ProfileDropdown = () => {
                                 onClick={
                                     !isSignOutPending
                                         ? () => {
-                                            signOut();
-                                        }
+                                              signOut();
+                                          }
                                         : undefined
                                 }
                                 variant={'destructive'}

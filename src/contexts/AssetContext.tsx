@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { AssetWithThreads } from "@/types/equipment/asset";
-import { ThreadDetail } from "@/types/equipment/thread";
-import { createContext } from "react";
+import { AssetWithThreads } from '@/types/equipment/asset';
+import { ThreadDetail } from '@/types/equipment/thread';
+import { createContext } from 'react';
 
 export type AssetContextType = {
     hasBootstrapped: boolean;
@@ -31,13 +31,13 @@ export const AssetContext = createContext<AssetContextType>({
     assetList: [],
     currentAsset: null,
     currentAssetId: null,
-    setAssetList: () => { },
-    setCurrentAssetId: () => { },
-    setCurrentAsset: () => { },
+    setAssetList: () => {},
+    setCurrentAssetId: () => {},
+    setCurrentAsset: () => {},
     refreshAssetList: async () => [],
-    addNewThreadToList: () => { },
-    updateThreadTitle: () => { },
-    placeThreadToTop: () => { },
-    removeThread: () => { },
-    getAssetFromListById: () => null
+    addNewThreadToList: () => {},
+    updateThreadTitle: () => {},
+    placeThreadToTop: () => {},
+    removeThread: () => {},
+    getAssetFromListById: () => null,
 });

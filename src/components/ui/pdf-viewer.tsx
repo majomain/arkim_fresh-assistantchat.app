@@ -1,11 +1,5 @@
 'use client';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+
 import {
     ChevronLeft,
     ChevronRight,
@@ -18,6 +12,15 @@ import {
     X,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogTitle,
+} from '@/components/ui/dialog';
+
 import { TooltipIconButton } from '../core/TooltipIconButton';
 import { Skeleton } from './skeleton';
 
@@ -67,31 +70,51 @@ export default function PDFPreviewer({
     onClose,
     filename = 'document.pdf',
     fetchPdf,
-    downloadable = false
+    downloadable = false,
 }: PDFPreviewerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const viewportRef = useRef<HTMLDivElement>(null);
     const renderTaskRef = useRef<import('pdfjs-dist').RenderTask | null>(null);
     const isRenderingRef = useRef(false);
-    const pendingRenderRef = useRef<{ page: number; scale: number } | null>(null);
-    const pdfDocRef = useRef<import('pdfjs-dist').PDFDocumentProxy | null>(null);
+    const pendingRenderRef = useRef<{ page: number; scale: number } | null>(
+        null,
+    );
+    const pdfDocRef = useRef<import('pdfjs-dist').PDFDocumentProxy | null>(
+        null,
+    );
     const objectUrlRef = useRef<string | null>(null);
     const zoomRef = useRef(ZOOM_DEFAULT);
-    const dragRef = useRef<{ active: boolean; startX: number; startY: number; scrollX: number; scrollY: number }>({
-        active: false, startX: 0, startY: 0, scrollX: 0, scrollY: 0,
+    const dragRef = useRef<{
+        active: boolean;
+        startX: number;
+        startY: number;
+        scrollX: number;
+        scrollY: number;
+    }>({
+        active: false,
+        startX: 0,
+        startY: 0,
+        scrollX: 0,
+        scrollY: 0,
     });
-    const lastCanvasSizeRef = useRef<{ width: number; height: number } | null>(null);
+    const lastCanvasSizeRef = useRef<{ width: number; height: number } | null>(
+        null,
+    );
 
     const [totalPages, setTotalPages] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [zoom, setZoom] = useState(ZOOM_DEFAULT);
     const [fitWidth, setFitWidth] = useState(true);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'rendering' | 'ready' | 'error'>('loading');
+    const [status, setStatus] = useState<
+        'idle' | 'loading' | 'rendering' | 'ready' | 'error'
+    >('loading');
     const [errorMsg, setErrorMsg] = useState('');
     const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
     // Keep zoomRef in sync
-    useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+    useEffect(() => {
+        zoomRef.current = zoom;
+    }, [zoom]);
 
     // ------------------------------------------------------------------
     // Core render — queues if already rendering to avoid same-canvas error
@@ -116,12 +139,19 @@ export default function PDFPreviewer({
 
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-            lastCanvasSizeRef.current = { width: viewport.width, height: viewport.height };
+            lastCanvasSizeRef.current = {
+                width: viewport.width,
+                height: viewport.height,
+            };
 
             const ctx = canvas.getContext('2d')!;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const renderTask = page.render({ canvasContext: ctx, viewport, canvas });
+            const renderTask = page.render({
+                canvasContext: ctx,
+                viewport,
+                canvas,
+            });
             renderTaskRef.current = renderTask;
 
             await renderTask.promise;
@@ -173,11 +203,15 @@ export default function PDFPreviewer({
                     blob = await fetchPdf(url);
                 } else {
                     const res = await fetch(url);
-                    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    if (!res.ok)
+                        throw new Error(
+                            `HTTP ${res.status}: ${res.statusText}`,
+                        );
                     blob = await res.blob();
                 }
                 if (cancelled) return;
-                if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+                if (objectUrlRef.current)
+                    URL.revokeObjectURL(objectUrlRef.current);
                 const objUrl = URL.createObjectURL(blob);
                 objectUrlRef.current = objUrl;
                 setBlobUrl(objUrl);
@@ -189,7 +223,9 @@ export default function PDFPreviewer({
             }
         })();
 
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [open, url, fetchPdf]);
 
     // ------------------------------------------------------------------
@@ -203,17 +239,23 @@ export default function PDFPreviewer({
             try {
                 const pdfjs = await getPdfjs();
                 const doc = await pdfjs.getDocument(blobUrl).promise;
-                if (cancelled) { doc.destroy(); return; }
+                if (cancelled) {
+                    doc.destroy();
+                    return;
+                }
                 if (pdfDocRef.current) pdfDocRef.current.destroy();
                 pdfDocRef.current = doc;
                 setTotalPages(doc.numPages);
                 setCurrentPage(1);
                 const page0 = await doc.getPage(1);
                 const naturalVp = page0.getViewport({ scale: 1 });
-                const containerWidth = viewportRef.current ? viewportRef.current.clientWidth - 48 : 0;
-                const initialScale = containerWidth > 0
-                    ? Math.max(ZOOM_MIN, containerWidth / naturalVp.width)
-                    : ZOOM_DEFAULT;
+                const containerWidth = viewportRef.current
+                    ? viewportRef.current.clientWidth - 48
+                    : 0;
+                const initialScale =
+                    containerWidth > 0
+                        ? Math.max(ZOOM_MIN, containerWidth / naturalVp.width)
+                        : ZOOM_DEFAULT;
                 setZoom(initialScale);
                 zoomRef.current = initialScale;
                 setStatus('rendering');
@@ -225,7 +267,9 @@ export default function PDFPreviewer({
             }
         })();
 
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [blobUrl]);
 
     // Kick off render on initial 'rendering' status
@@ -286,21 +330,31 @@ export default function PDFPreviewer({
                 case 'ArrowRight':
                 case 'ArrowDown':
                     e.preventDefault();
-                    setCurrentPage(p => Math.min(totalPages, p + 1));
+                    setCurrentPage((p) => Math.min(totalPages, p + 1));
                     break;
                 case 'ArrowLeft':
                 case 'ArrowUp':
                     e.preventDefault();
-                    setCurrentPage(p => Math.max(1, p - 1));
+                    setCurrentPage((p) => Math.max(1, p - 1));
                     break;
                 case '+':
                 case '=':
                     e.preventDefault();
-                    applyZoom(d => Math.min(ZOOM_MAX, Math.round((d + ZOOM_STEP) * 100) / 100));
+                    applyZoom((d) =>
+                        Math.min(
+                            ZOOM_MAX,
+                            Math.round((d + ZOOM_STEP) * 100) / 100,
+                        ),
+                    );
                     break;
                 case '-':
                     e.preventDefault();
-                    applyZoom(d => Math.max(ZOOM_MIN, Math.round((d - ZOOM_STEP) * 100) / 100));
+                    applyZoom((d) =>
+                        Math.max(
+                            ZOOM_MIN,
+                            Math.round((d - ZOOM_STEP) * 100) / 100,
+                        ),
+                    );
                     break;
                 case 'f':
                 case 'F':
@@ -324,14 +378,22 @@ export default function PDFPreviewer({
 
         const onMouseDown = (e: MouseEvent) => {
             if (e.button !== 0 || !canDrag()) return;
-            dragRef.current = { active: true, startX: e.clientX, startY: e.clientY, scrollX: el.scrollLeft, scrollY: el.scrollTop };
+            dragRef.current = {
+                active: true,
+                startX: e.clientX,
+                startY: e.clientY,
+                scrollX: el.scrollLeft,
+                scrollY: el.scrollTop,
+            };
             el.style.cursor = 'grabbing';
             el.style.userSelect = 'none';
         };
         const onMouseMove = (e: MouseEvent) => {
             if (!dragRef.current.active) return;
-            el.scrollLeft = dragRef.current.scrollX - (e.clientX - dragRef.current.startX);
-            el.scrollTop = dragRef.current.scrollY - (e.clientY - dragRef.current.startY);
+            el.scrollLeft =
+                dragRef.current.scrollX - (e.clientX - dragRef.current.startX);
+            el.scrollTop =
+                dragRef.current.scrollY - (e.clientY - dragRef.current.startY);
         };
         const onMouseUp = () => {
             if (!dragRef.current.active) return;
@@ -359,7 +421,7 @@ export default function PDFPreviewer({
     // Zoom helpers
     // ------------------------------------------------------------------
     const applyZoom = (updater: (prev: number) => number) => {
-        setZoom(prev => {
+        setZoom((prev) => {
             const next = updater(prev);
             zoomRef.current = next;
             return next;
@@ -367,8 +429,14 @@ export default function PDFPreviewer({
         setFitWidth(false);
     };
 
-    const handleZoomIn = () => applyZoom(p => Math.min(ZOOM_MAX, Math.round((p + ZOOM_STEP) * 100) / 100));
-    const handleZoomOut = () => applyZoom(p => Math.max(ZOOM_MIN, Math.round((p - ZOOM_STEP) * 100) / 100));
+    const handleZoomIn = () =>
+        applyZoom((p) =>
+            Math.min(ZOOM_MAX, Math.round((p + ZOOM_STEP) * 100) / 100),
+        );
+    const handleZoomOut = () =>
+        applyZoom((p) =>
+            Math.max(ZOOM_MIN, Math.round((p - ZOOM_STEP) * 100) / 100),
+        );
     const handleResetZoom = () => applyZoom(() => ZOOM_DEFAULT);
 
     const handleToggleFitWidth = useCallback(async () => {
@@ -417,61 +485,95 @@ export default function PDFPreviewer({
                 onOpenAutoFocus={(e) => e.preventDefault()}
                 className="flex flex-col max-w-4xl w-[95vw] max-h-[96vh] bg-card [&>button]:hidden overflow-hidden"
             >
-                <DialogTitle className='p-0' />
-                <DialogDescription className='p-0' />
+                <DialogTitle className="p-0" />
+                <DialogDescription className="p-0" />
 
                 {/* ── Toolbar ── */}
                 <div className="flex flex-col items-start justify-between gap-5 -mt-10">
-
-                    <div className='w-full flex flex-row items-center justify-between'>
+                    <div className="w-full flex flex-row items-center justify-between">
                         {/* Filename */}
                         <span className="text-sm font-medium" title={filename}>
                             {filename}
                         </span>
                         {/* Close */}
-                        <Button variant="ghost" size="icon"
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
-                            onClick={onClose} title="Close (Esc)">
+                            onClick={onClose}
+                            title="Close (Esc)"
+                        >
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
 
                     {/* Controls */}
                     <div className="w-full flex flex-wrap items-center justify-around gap-0.5 bg-muted/70 p-1 rounded-md">
-
                         {/* Page nav */}
-                        <TooltipIconButton variant="ghost" size="icon"
+                        <TooltipIconButton
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             onClick={() => goTo(currentPage - 1)}
-                            disabled={currentPage <= 1 || isLoading || !blobUrl || status === 'error'}
-                            tooltip="Previous page (←)">
+                            disabled={
+                                currentPage <= 1 ||
+                                isLoading ||
+                                !blobUrl ||
+                                status === 'error'
+                            }
+                            tooltip="Previous page (←)"
+                        >
                             <ChevronLeft className="h-4 w-4" />
                         </TooltipIconButton>
 
                         <div className="flex items-center gap-1 text-sm text-zinc-300 px-1">
                             <input
-                                type="number" min={1} max={totalPages}
-                                defaultValue={currentPage} key={currentPage}
+                                type="number"
+                                min={1}
+                                max={totalPages}
+                                defaultValue={currentPage}
+                                key={currentPage}
                                 onKeyDown={handlePageInput}
-                                disabled={isLoading || !blobUrl || status === 'error'}
+                                disabled={
+                                    isLoading || !blobUrl || status === 'error'
+                                }
                                 className="w-11 text-center bg-accent text-foreground rounded px-1 py-1 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-zinc-600">/</span>
-                            <span className="text-zinc-400 min-w-[1.5rem] text-center">{totalPages || '—'}</span>
+                            <span className="text-zinc-400 min-w-[1.5rem] text-center">
+                                {totalPages || '—'}
+                            </span>
                         </div>
 
-                        <TooltipIconButton variant="ghost" size="icon"
+                        <TooltipIconButton
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             onClick={() => goTo(currentPage + 1)}
-                            disabled={currentPage >= totalPages || isLoading || !blobUrl || status === 'error'}
-                            tooltip="Next page (→)">
+                            disabled={
+                                currentPage >= totalPages ||
+                                isLoading ||
+                                !blobUrl ||
+                                status === 'error'
+                            }
+                            tooltip="Next page (→)"
+                        >
                             <ChevronRight className="h-4 w-4" />
                         </TooltipIconButton>
 
                         {/* Zoom */}
-                        <TooltipIconButton variant="ghost" size="icon"
+                        <TooltipIconButton
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
-                            onClick={handleZoomOut} disabled={zoom <= ZOOM_MIN || !blobUrl || status === 'error'} tooltip="Zoom out (-)">
+                            onClick={handleZoomOut}
+                            disabled={
+                                zoom <= ZOOM_MIN ||
+                                !blobUrl ||
+                                status === 'error'
+                            }
+                            tooltip="Zoom out (-)"
+                        >
                             <Minus className="h-4 w-4" />
                         </TooltipIconButton>
 
@@ -484,36 +586,55 @@ export default function PDFPreviewer({
                             {Math.round(zoom * 100)}%
                         </button>
 
-                        <TooltipIconButton variant="ghost" size="icon"
+                        <TooltipIconButton
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
-                            onClick={handleZoomIn} disabled={zoom >= ZOOM_MAX || !blobUrl || status === 'error'} tooltip="Zoom in (+)" >
+                            onClick={handleZoomIn}
+                            disabled={
+                                zoom >= ZOOM_MAX ||
+                                !blobUrl ||
+                                status === 'error'
+                            }
+                            tooltip="Zoom in (+)"
+                        >
                             <Plus className="h-4 w-4" />
                         </TooltipIconButton>
 
                         {/* Fit width */}
-                        <TooltipIconButton variant="ghost" size="icon"
+                        <TooltipIconButton
+                            variant="ghost"
+                            size="icon"
                             className={`h-8 w-8 ${fitWidth ? 'text-primary' : ''}`}
                             onClick={handleToggleFitWidth}
                             disabled={!blobUrl || status === 'error'}
-                            tooltip="Fit to width (F)">
+                            tooltip="Fit to width (F)"
+                        >
                             <RotateCcw className="h-4 w-4" />
                         </TooltipIconButton>
 
                         {/* Download */}
-                        {
-                            downloadable && <TooltipIconButton variant="ghost" size="icon"
+                        {downloadable && (
+                            <TooltipIconButton
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8"
-                                onClick={handleDownload} disabled={!blobUrl || status === 'error'} tooltip="Download">
+                                onClick={handleDownload}
+                                disabled={!blobUrl || status === 'error'}
+                                tooltip="Download"
+                            >
                                 <Download className="h-4 w-4" />
                             </TooltipIconButton>
-                        }
+                        )}
                     </div>
                 </div>
 
                 {/* Keyboard hint bar */}
                 <div className="flex justify-center">
                     <p className="text-[11px] text-zinc-600 tracking-wide">
-                        <b>← →</b> &nbsp;navigate &nbsp;·&nbsp; <b>+/−</b> &nbsp;zoom &nbsp;·&nbsp;<b>F</b> &nbsp;fit width &nbsp;·&nbsp; <b>Esc</b> &nbsp;close
+                        <b>← →</b> &nbsp;navigate &nbsp;·&nbsp; <b>+/−</b>{' '}
+                        &nbsp;zoom &nbsp;·&nbsp;<b>F</b> &nbsp;fit width
+                        &nbsp;·&nbsp; <b>Esc</b> &nbsp;close
                     </p>
                 </div>
 
@@ -527,17 +648,23 @@ export default function PDFPreviewer({
                         style={
                             lastCanvasSizeRef.current
                                 ? {
-                                    width: lastCanvasSizeRef.current.width,
-                                    minHeight: lastCanvasSizeRef.current.height,
-                                    margin: '0 auto',
-                                }
+                                      width: lastCanvasSizeRef.current.width,
+                                      minHeight:
+                                          lastCanvasSizeRef.current.height,
+                                      margin: '0 auto',
+                                  }
                                 : { width: '100%', minHeight: '60vh' }
                         }
                     >
                         {/* Skeleton — fills the stable area while loading or rendering */}
                         <Skeleton
                             className="absolute inset-0 w-full h-full rounded-md"
-                            style={{ display: status !== 'ready' && status !== 'error' ? 'block' : 'none' }}
+                            style={{
+                                display:
+                                    status !== 'ready' && status !== 'error'
+                                        ? 'block'
+                                        : 'none',
+                            }}
                         />
 
                         {/* Loader — floats above the skeleton */}
@@ -545,7 +672,9 @@ export default function PDFPreviewer({
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 pointer-events-none">
                                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                                 <p className="text-sm text-muted-foreground">
-                                    {status === 'loading' ? 'Fetching document...' : 'Rendering page...'}
+                                    {status === 'loading'
+                                        ? 'Fetching document...'
+                                        : 'Rendering page...'}
                                 </p>
                             </div>
                         )}
@@ -553,8 +682,13 @@ export default function PDFPreviewer({
                         {/* Error state */}
                         {status === 'error' && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center w-full">
-                                <CircleAlert className="size-9 text-destructive" strokeWidth={1} />
-                                <p className="font-medium text-base text-destructive">{errorMsg}</p>
+                                <CircleAlert
+                                    className="size-9 text-destructive"
+                                    strokeWidth={1}
+                                />
+                                <p className="font-medium text-base text-destructive">
+                                    {errorMsg}
+                                </p>
                             </div>
                         )}
 
@@ -562,7 +696,9 @@ export default function PDFPreviewer({
                         <canvas
                             ref={canvasRef}
                             className="relative z-10 mx-auto border-1 border-foreground/50 rounded-md"
-                            style={{ display: status === 'ready' ? 'block' : 'none' }}
+                            style={{
+                                display: status === 'ready' ? 'block' : 'none',
+                            }}
                         />
                     </div>
                 </div>

@@ -2,9 +2,11 @@ import { STORAGE_KEYS } from '@/config/constant';
 import { getApiConfig } from '@/config/environmentVariablesService';
 import { clearOidcStorage } from '@/storage/oidcStorage';
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+
 import { ApiError } from '@/lib/api-error';
-import authService from './authService';
+
 import oidcAuthService from '../auth/oidcAuthService';
+import authService from './authService';
 
 const apiConfig = getApiConfig();
 
@@ -76,7 +78,10 @@ const createClient = (baseUrl?: string): AxiosInstance => {
         (config) => {
             // Don't send requests during signOut to avoid race conditions
             // But allow the logout request itself
-            if (oidcAuthService.isSigningOut() && config.url !== '/auth/logout') {
+            if (
+                oidcAuthService.isSigningOut() &&
+                config.url !== '/auth/logout'
+            ) {
                 console.log(
                     '[API] Request blocked during signOut:',
                     config.url,

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { ThreadDetail } from "@/types/equipment/thread";
-import { createContext } from "react";
+import { ThreadDetail } from '@/types/equipment/thread';
+import { createContext } from 'react';
 
 export type ThreadContextType = {
     isThreadLoading: boolean;
@@ -21,10 +21,10 @@ export const ThreadContext = createContext<ThreadContextType>({
     currentThread: null,
     currentThreadId: null,
     currentProcessingThreads: [],
-    setCurrentThreadId: () => { },
-    setCurrentThread: () => { },
-    fetchThreadDetail: () => { },
+    setCurrentThreadId: () => {},
+    setCurrentThread: () => {},
+    fetchThreadDetail: () => {},
     closeThread: async () => false,
     reportThread: async () => false,
-    isThreadProcessing: () => false
+    isThreadProcessing: () => false,
 });

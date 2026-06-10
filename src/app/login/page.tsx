@@ -1,10 +1,12 @@
 'use client';
 
 import { STORAGE_KEYS } from '@/config/constant';
+import { isAuthBypassEnabled } from '@/config/devAuthBypass';
+import oidcAuthService from '@/services/auth/oidcAuthService';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import oidcAuthService from '@/services/auth/oidcAuthService';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -12,6 +14,11 @@ export default function LoginPage() {
 
     useEffect(() => {
         const initiateLogin = async () => {
+            if (isAuthBypassEnabled()) {
+                window.location.href = '/';
+                return;
+            }
+
             if (oidcAuthService.isSigningOut()) {
                 oidcAuthService.clearSignOutFlag();
                 setIsRedirecting(false);

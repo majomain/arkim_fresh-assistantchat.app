@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import Pagination, { SizeType } from "./filters/Pagination";
-import { Loader2, PackageOpen } from "lucide-react";
+import { Loader2, PackageOpen } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+import Pagination, { SizeType } from './filters/Pagination';
 
 interface CardWithPaginationProps<T> {
     data: T[];
@@ -15,7 +16,7 @@ export default function CardWithPagination<T>({
     data,
     renderCard,
     isDataLoading = false,
-    emptyState
+    emptyState,
 }: CardWithPaginationProps<T>) {
     // current page state for pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -43,41 +44,47 @@ export default function CardWithPagination<T>({
 
     const totalPages = Math.max(1, Math.ceil(data.length / sizeNum));
 
-    return <>
-        <div ref={cardContainerRef} className="scrollable py-0.5 px-2 flex flex-col gap-5 max-h-[500px] overflow-auto">
-            {
-                isDataLoading
-                    ?
+    return (
+        <>
+            <div
+                ref={cardContainerRef}
+                className="scrollable py-0.5 px-2 flex flex-col gap-5 max-h-[500px] overflow-auto"
+            >
+                {isDataLoading ? (
                     <div className="p-10 flex flex-col items-center gap-1">
                         <Loader2 className="animate-spin size-6" />
                         <p>Loading...</p>
                     </div>
-                    :
-                    paginated.length
-                        ?
-                        paginated.map((item) => renderCard(item))
-                        :
-                        emptyState
-                        ??
+                ) : paginated.length ? (
+                    paginated.map((item) => renderCard(item))
+                ) : (
+                    (emptyState ?? (
                         <div className="w-full flex flex-col items-center p-2 gap-4 mt-5">
-                            <PackageOpen className="text-muted-foreground w-15 h-15" strokeWidth={1} />
-                            <p className="text-lg font-semibold text-center">No Data Found</p>
+                            <PackageOpen
+                                className="text-muted-foreground w-15 h-15"
+                                strokeWidth={1}
+                            />
+                            <p className="text-lg font-semibold text-center">
+                                No Data Found
+                            </p>
                         </div>
-            }
-        </div>
+                    ))
+                )}
+            </div>
 
-        <div className="w-full flex justify-end pt-2 mt-2 border-t-1">
-            <Pagination
-                isDataLoading={isDataLoading}
-                totalPages={totalPages}
-                page={currentPage}
-                size={currentSize}
-                onPageChange={setCurrentPage}
-                onSizeChange={(size) => {
-                    setCurrentSize(size);
-                    setCurrentPage(1);
-                }}
-            />
-        </div>
-    </>
+            <div className="w-full flex justify-end pt-2 mt-2 border-t-1">
+                <Pagination
+                    isDataLoading={isDataLoading}
+                    totalPages={totalPages}
+                    page={currentPage}
+                    size={currentSize}
+                    onPageChange={setCurrentPage}
+                    onSizeChange={(size) => {
+                        setCurrentSize(size);
+                        setCurrentPage(1);
+                    }}
+                />
+            </div>
+        </>
+    );
 }

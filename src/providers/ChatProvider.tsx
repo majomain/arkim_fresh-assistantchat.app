@@ -1,6 +1,7 @@
 'use client';
 
 import { ChatContext, ResponseAlertType } from '@/contexts/ChatContext';
+import { useThreadBroadcast } from '@/hooks/broadcasts/use-thread-broadcast';
 import { useAsset } from '@/hooks/use-asset';
 import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from '@/hooks/use-location';
@@ -10,11 +11,18 @@ import messagingService from '@/services/api/messagingService';
 import { ThreadDetail } from '@/types/equipment/thread';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { errorToast } from '@/components/ui/sonner';
-import { webNotify } from '@/utils/web-notification';
-import { ProgressType, ReasoningType, StreamlineChatHandler, Tags } from '@/lib/streamline-chat-handler';
 import { unstable_batchedUpdates } from 'react-dom';
-import { useThreadBroadcast } from '@/hooks/broadcasts/use-thread-broadcast';
+
+import { errorToast } from '@/components/ui/sonner';
+
+import { webNotify } from '@/utils/web-notification';
+
+import {
+    ProgressType,
+    ReasoningType,
+    StreamlineChatHandler,
+    Tags,
+} from '@/lib/streamline-chat-handler';
 
 export type MessageUserRole = 'user' | 'assistant';
 
@@ -88,50 +96,60 @@ export default function ChatProvider({
     const messages = currentThreadId ? messagesMap[currentThreadId] || [] : [];
 
     // sse mapping
-    const [sseMap, setSSEMap] = useState<Record<string, {
-        response: string;
-        thinking: ProgressType;
-        reasoning: ReasoningType;
-        isPosting: boolean;
-    }>>({});
+    const [sseMap, setSSEMap] = useState<
+        Record<
+            string,
+            {
+                response: string;
+                thinking: ProgressType;
+                reasoning: ReasoningType;
+                isPosting: boolean;
+            }
+        >
+    >({});
 
     // sse map reference for ongoing items
-    const sseMapRef = useRef<Record<string, {
-        response: string;
-        thinking: ProgressType;
-        reasoning: ReasoningType;
-        isPosting: boolean;
-    }>>({});
+    const sseMapRef = useRef<
+        Record<
+            string,
+            {
+                response: string;
+                thinking: ProgressType;
+                reasoning: ReasoningType;
+                isPosting: boolean;
+            }
+        >
+    >({});
 
     // broadcast setup
-    const { threadCreated, threadTitleUpdated } = useThreadBroadcast((event) => {
-        if (event.type === 'THREAD_CREATED') {
-            addNewThreadToList(event.thread);
-        }
-        if (event.type === 'THREAD_TITLE_UPDATED') {
-            updateThreadTitle(event.threadId, event.title);
-        }
-    });
+    const { threadCreated, threadTitleUpdated } = useThreadBroadcast(
+        (event) => {
+            if (event.type === 'THREAD_CREATED') {
+                addNewThreadToList(event.thread);
+            }
+            if (event.type === 'THREAD_TITLE_UPDATED') {
+                updateThreadTitle(event.threadId, event.title);
+            }
+        },
+    );
 
     // common updater
     const updateThreadSSE = useCallback(
         (
             threadId: string,
-            updater: (
-                thread: {
-                    response: string;
-                    thinking: ProgressType;
-                    reasoning: ReasoningType;
-                    isPosting: boolean;
-                }
-            ) => {
+            updater: (thread: {
+                response: string;
+                thinking: ProgressType;
+                reasoning: ReasoningType;
+                isPosting: boolean;
+            }) => {
                 response?: string;
                 thinking?: ProgressType;
                 reasoning?: ReasoningType;
                 isPosting?: boolean;
-            }
+            },
         ) => {
-            setSSEMap(prev => {
+            setSSEMap((prev) => {
                 const thread = prev[threadId];
                 if (!thread) return prev;
 
@@ -152,13 +170,13 @@ export default function ChatProvider({
                 return updated;
             });
         },
-        []
+        [],
     );
 
     // set thread is posting flag
     const setThreadPosting = useCallback(
         (threadId: string, isPosting: boolean) => {
-            setSSEMap(prev => {
+            setSSEMap((prev) => {
                 const thread = prev[threadId];
                 if (!thread) return prev;
 
@@ -174,26 +192,27 @@ export default function ChatProvider({
                 return updated;
             });
         },
-        []
+        [],
     );
 
     // current thread sse if any
     const currentThreadSSE = currentThreadId
-        ? sseMap[currentThreadId] ?? {
-            isPosting: false,
-            reasoning: {},
-            response: '',
-            thinking: []
-        } : {
-            isPosting: false,
-            reasoning: {},
-            response: '',
-            thinking: []
-        };
+        ? (sseMap[currentThreadId] ?? {
+              isPosting: false,
+              reasoning: {},
+              response: '',
+              thinking: [],
+          })
+        : {
+              isPosting: false,
+              reasoning: {},
+              response: '',
+              thinking: [],
+          };
 
     // is current thread posting message
     const isCurrentThreadPosting = currentThreadId
-        ? sseMap[currentThreadId]?.isPosting ?? false
+        ? (sseMap[currentThreadId]?.isPosting ?? false)
         : false;
 
     // post message or create new thread
@@ -231,7 +250,8 @@ export default function ChatProvider({
             // append user prompt if thread did not start from W/O
             if (!isWorkOrder) {
                 content = content.trim();
-                const hasAttachments = attachmentUrls && attachmentUrls.length > 0;
+                const hasAttachments =
+                    attachmentUrls && attachmentUrls.length > 0;
                 if (!content && !hasAttachments) return;
 
                 // append user message
@@ -258,20 +278,20 @@ export default function ChatProvider({
             setCurrentAssetId(userAssetId);
 
             // initialize sse mapping against the given threadId
-            setSSEMap(prev => ({
+            setSSEMap((prev) => ({
                 ...prev,
                 [threadId]: {
                     response: '',
                     thinking: [],
                     reasoning: {},
-                    isPosting: true
-                }
+                    isPosting: true,
+                },
             }));
             sseMapRef.current[threadId] = {
                 response: '',
                 thinking: [],
                 reasoning: {},
-                isPosting: true
+                isPosting: true,
             };
 
             // mark thread as processing for existing thread (for sidebar indicators)
@@ -290,22 +310,19 @@ export default function ChatProvider({
                 // make payload
                 const payload = isWorkOrder
                     ? {
-                        workOrderId: workOrderData?.workOrderId || '',
-                    }
+                          workOrderId: workOrderData?.workOrderId || '',
+                      }
                     : {
-                        threadId,
-                        assetId: userAssetId,
-                        userMessage: content,
-                        ...(attachmentUrls?.length
-                            ? { attachmentUrls }
-                            : {}),
-                    };
+                          threadId,
+                          assetId: userAssetId,
+                          userMessage: content,
+                          ...(attachmentUrls?.length ? { attachmentUrls } : {}),
+                      };
 
                 console.log('[ChatProvider] Sending payload:', payload);
 
                 // make api URL
-                let url =
-                    process.env.NEXT_PUBLIC_API_BASE_URL_MESSAGING;
+                let url = process.env.NEXT_PUBLIC_API_BASE_URL_MESSAGING;
                 url =
                     url +
                     (isWorkOrder ? '/messages/from-work-order' : '/messages');
@@ -326,8 +343,8 @@ export default function ChatProvider({
                     const data = await res.json().catch(() => ({}));
                     throw new Error(
                         data.detail ||
-                        data.message ||
-                        `HTTP Error ${res.status}`,
+                            data.message ||
+                            `HTTP Error ${res.status}`,
                     );
                 }
                 if (!res.body) throw new Error('No response body from server');
@@ -342,9 +359,9 @@ export default function ChatProvider({
                 const StreamlineHandler = new StreamlineChatHandler({
                     // updates the thinking processes list for the thread
                     updateThinking(step, tag, delta) {
-                        updateThreadSSE(threadId, thread => {
+                        updateThreadSSE(threadId, (thread) => {
                             const index = thread.thinking.findIndex(
-                                t => t.step === step && t.tag === tag
+                                (t) => t.step === step && t.tag === tag,
                             );
 
                             if (index >= 0) {
@@ -360,7 +377,7 @@ export default function ChatProvider({
                     },
                     // updates the reasoning(present in the message) list for the thread
                     updateReasoning(tag, delta) {
-                        updateThreadSSE(threadId, thread => {
+                        updateThreadSSE(threadId, (thread) => {
                             const existing = thread.reasoning[tag] ?? {
                                 title: tag,
                                 content: '',
@@ -379,14 +396,16 @@ export default function ChatProvider({
                     },
                     // append new thinking process entry
                     appendThinking(entry) {
-                        updateThreadSSE(threadId, thread => {
+                        updateThreadSSE(threadId, (thread) => {
                             const exists = thread.thinking.some(
-                                t => t.step === entry.step && t.tag === entry.tag
+                                (t) =>
+                                    t.step === entry.step &&
+                                    t.tag === entry.tag,
                             );
 
                             if (!exists) {
                                 return {
-                                    thinking: [...thread.thinking, entry]
+                                    thinking: [...thread.thinking, entry],
                                 };
                             }
 
@@ -395,7 +414,7 @@ export default function ChatProvider({
                     },
                     // append new reasoning entry
                     appendReasoning(reasoning) {
-                        updateThreadSSE(threadId, thread => {
+                        updateThreadSSE(threadId, (thread) => {
                             const tag = Object.keys(reasoning)[0] as Tags;
                             const value = reasoning[tag];
 
@@ -409,7 +428,7 @@ export default function ChatProvider({
                     },
                     // append final response(assistant's message)
                     appendResponse(delta) {
-                        updateThreadSSE(threadId, thread => ({
+                        updateThreadSSE(threadId, (thread) => ({
                             response: thread.response + delta,
                         }));
                     },
@@ -439,7 +458,8 @@ export default function ChatProvider({
                             // handle events
                             switch (eventMatch[1]) {
                                 case 'new_thread':
-                                    const newThreadId = data.thread_id ?? threadId;
+                                    const newThreadId =
+                                        data.thread_id ?? threadId;
 
                                     // mark thread as processing (for sidebar indicators)
                                     setProcessingThreads((prev) => ({
@@ -456,7 +476,8 @@ export default function ChatProvider({
                                                 {
                                                     userAssetId,
                                                     threadId: newThreadId,
-                                                    messageId: crypto.randomUUID(),
+                                                    messageId:
+                                                        crypto.randomUUID(),
                                                     timestamp:
                                                         Date.now().toString(),
                                                     role: 'user',
@@ -483,8 +504,11 @@ export default function ChatProvider({
                                         status: 'open',
                                         currentProcessingStatus: 'completed',
                                         rate: 0,
-                                        title: isWorkOrder ? workOrderData?.title ?? '' : '',
-                                        startedFromWorkOrder: isWorkOrder ?? false,
+                                        title: isWorkOrder
+                                            ? (workOrderData?.title ?? '')
+                                            : '',
+                                        startedFromWorkOrder:
+                                            isWorkOrder ?? false,
                                     };
 
                                     // emit thread created event to update other clients
@@ -492,7 +516,7 @@ export default function ChatProvider({
 
                                     // add new thread to sidebar list
                                     addNewThreadToList(newThreadData);
-                                    // set current thread 
+                                    // set current thread
                                     setCurrentThread(newThreadData);
                                     setCurrentThreadId(newThreadId);
 
@@ -501,33 +525,51 @@ export default function ChatProvider({
                                     threadId = newThreadId;
 
                                     // initialize sse mapping against the new threadId
-                                    setSSEMap(prev => ({
+                                    setSSEMap((prev) => ({
                                         ...prev,
                                         [threadId]: {
                                             response: '',
                                             thinking: [],
                                             reasoning: {},
-                                            isPosting: true
-                                        }
+                                            isPosting: true,
+                                        },
                                     }));
                                     sseMapRef.current[threadId] = {
                                         response: '',
                                         thinking: [],
                                         reasoning: {},
-                                        isPosting: true
+                                        isPosting: true,
                                     };
 
                                     break;
                                 case 'title':
-                                    threadTitle = isWorkOrder ? workOrderData?.title ?? '' : data.title;
+                                    threadTitle = isWorkOrder
+                                        ? (workOrderData?.title ?? '')
+                                        : data.title;
                                     // emit title updated event to update other clients
-                                    threadTitleUpdated(threadId, threadTitle ?? '');
+                                    threadTitleUpdated(
+                                        threadId,
+                                        threadTitle ?? '',
+                                    );
                                     // update the title in UI
-                                    updateThreadTitle(threadId, threadTitle ?? '');
+                                    updateThreadTitle(
+                                        threadId,
+                                        threadTitle ?? '',
+                                    );
                                     break;
-                                case 'progress': StreamlineHandler.handleProgressEvent(data); break;
-                                case 'tag_start': StreamlineHandler.handleTagStartEvent(data); break;
-                                case 'delta': unstable_batchedUpdates(() => { StreamlineHandler.handleDeltaEvent(data); }); break;
+                                case 'progress':
+                                    StreamlineHandler.handleProgressEvent(data);
+                                    break;
+                                case 'tag_start':
+                                    StreamlineHandler.handleTagStartEvent(data);
+                                    break;
+                                case 'delta':
+                                    unstable_batchedUpdates(() => {
+                                        StreamlineHandler.handleDeltaEvent(
+                                            data,
+                                        );
+                                    });
+                                    break;
                                 case 'tag_end':
                                     StreamlineHandler.handleTagEndEvent(data);
                                     // if the tag ended for final response(assistant's message) then set flag true
@@ -598,7 +640,7 @@ export default function ChatProvider({
                                 threadId: threadId,
                                 title: threadTitle ?? 'Untitled',
                                 description: finalSSE.response,
-                                timestamp: Date.now()
+                                timestamp: Date.now(),
                             },
                         ]);
                     } else if (document.visibilityState !== 'visible') {
@@ -626,8 +668,12 @@ export default function ChatProvider({
 
                 // refresh messages from server to get real IDs (local messages use crypto.randomUUID)
                 try {
-                    const serverMessages = await messagingService.getMessagesByThread(threadId);
-                    setMessagesMap((prev) => ({ ...prev, [threadId]: serverMessages }));
+                    const serverMessages =
+                        await messagingService.getMessagesByThread(threadId);
+                    setMessagesMap((prev) => ({
+                        ...prev,
+                        [threadId]: serverMessages,
+                    }));
                 } catch {
                     // non-critical — local messages still shown
                 }
@@ -645,7 +691,6 @@ export default function ChatProvider({
                     delete copy[threadId];
                     return copy;
                 });
-
             }
         },
         [
@@ -680,7 +725,7 @@ export default function ChatProvider({
             setMessagesMap((prev) => ({ ...prev, [threadId]: data }));
         } catch (error: any) {
             errorToast({ title: 'Error', description: error.message });
-            console.log(error)
+            console.log(error);
             if (error?.response?.status === 404) {
                 router.push('/');
             }

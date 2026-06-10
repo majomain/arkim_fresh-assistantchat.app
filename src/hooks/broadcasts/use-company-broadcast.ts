@@ -1,9 +1,8 @@
 'use client';
 
-import { useBroadcast } from "../use-broadcast";
+import { useBroadcast } from '../use-broadcast';
 
-export type CompanyEvent =
-    | { type: 'COMPANY_UPDATED'; };
+export type CompanyEvent = { type: 'COMPANY_UPDATED' };
 
 export function useCompanyBroadcast(onMessage?: (event: CompanyEvent) => void) {
     const { emit } = useBroadcast<CompanyEvent>('company', onMessage);
@@ -11,7 +10,7 @@ export function useCompanyBroadcast(onMessage?: (event: CompanyEvent) => void) {
     // emit that a company has been updated with the company id
     const companyUpdated = () => {
         emit({ type: 'COMPANY_UPDATED' });
-    }
+    };
 
     return { companyUpdated };
 }

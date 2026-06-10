@@ -24,7 +24,7 @@ interface ArkimLoaderProps {
     className?: string;
 }
 
-const BASE_SRC   = '/assets/loader/arkim-mark.png';
+const BASE_SRC = '/assets/loader/arkim-mark.png';
 const ACCENT_SRC = '/assets/loader/arkim-mark-accent.png';
 
 export default function ArkimLoader({
@@ -41,20 +41,37 @@ export default function ArkimLoader({
         <span
             className="amark"
             data-mode={determinate ? 'determinate' : 'indeterminate'}
-            style={{
-                width: size,
-                height: size,
-                '--pct': `${pct ?? 0}%`,
-            } as React.CSSProperties}
+            style={
+                {
+                    width: size,
+                    height: size,
+                    '--pct': `${pct ?? 0}%`,
+                } as React.CSSProperties
+            }
         >
             {/* dim base — "empty screw" */}
-            <img className="amark-layer amark-base" src={BASE_SRC} alt="" draggable={false} />
+            <img
+                className="amark-layer amark-base"
+                src={BASE_SRC}
+                alt=""
+                draggable={false}
+            />
             {/* soft trailing glow for depth (indeterminate only) */}
             {!determinate && (
-                <img className="amark-layer amark-glow" src={ACCENT_SRC} alt="" draggable={false} />
+                <img
+                    className="amark-layer amark-glow"
+                    src={ACCENT_SRC}
+                    alt=""
+                    draggable={false}
+                />
             )}
             {/* accent fill — clipped to reveal via animation or pct */}
-            <img className="amark-layer amark-fill" src={ACCENT_SRC} alt="" draggable={false} />
+            <img
+                className="amark-layer amark-fill"
+                src={ACCENT_SRC}
+                alt=""
+                draggable={false}
+            />
         </span>
     );
 
@@ -63,7 +80,8 @@ export default function ArkimLoader({
             <div className={`loader-pct${className ? ` ${className}` : ''}`}>
                 {mark}
                 <div className="lp-num">
-                    {Math.round(pct ?? 0)}<b>%</b>
+                    {Math.round(pct ?? 0)}
+                    <b>%</b>
                 </div>
                 {label && <div className="lb-label">{label}</div>}
             </div>
@@ -72,7 +90,9 @@ export default function ArkimLoader({
 
     if (inline) {
         return (
-            <span className={`loader-inline${className ? ` ${className}` : ''}`}>
+            <span
+                className={`loader-inline${className ? ` ${className}` : ''}`}
+            >
                 {mark}
                 {label && <span className="li-label">{label}</span>}
             </span>

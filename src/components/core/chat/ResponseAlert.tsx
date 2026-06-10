@@ -4,7 +4,9 @@ import { useChat } from '@/hooks/use-chat';
 import { BellRing, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+
 import { Card, CardContent } from '@/components/ui/card';
+
 import { webNotify } from '@/utils/web-notification';
 
 export default function ResponseNotification() {
@@ -16,12 +18,15 @@ export default function ResponseNotification() {
     // track which alerts are hidden in UI (but still in context)
     const [hiddenAlerts, setHiddenAlerts] = useState<Set<string>>(new Set());
     // keep timeout refs so we can clear on unmount
-    const timeoutRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+    const timeoutRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+        new Map(),
+    );
 
     // slide-in new alerts and start their auto-hide timers
     useEffect(() => {
         responseAlerts.forEach((alert) => {
-            if (visibleAlerts.includes(alert.id) || hiddenAlerts.has(alert.id)) return;
+            if (visibleAlerts.includes(alert.id) || hiddenAlerts.has(alert.id))
+                return;
 
             // fire web notification
             webNotify(
@@ -83,15 +88,20 @@ export default function ResponseNotification() {
                 return (
                     <Card
                         key={responseAlert.id}
-                        className={`shadow-lg p-2.5 cursor-pointer hover:bg-background transform transition-all duration-300 ease-out
+                        className={`surface-attention surface-attention--bar shadow-lg p-2.5 cursor-pointer transform transition-all duration-300 ease-out
                             ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-30 opacity-0'}`}
-                        onClick={() => handleCardClick(responseAlert.threadId, responseAlert.id)}
+                        onClick={() =>
+                            handleCardClick(
+                                responseAlert.threadId,
+                                responseAlert.id,
+                            )
+                        }
                     >
                         <CardContent className="p-0 flex flex-col gap-2">
                             <div className="flex flex-row gap-2 items-center justify-between">
                                 <div className="flex flex-row gap-2 items-center min-w-0">
-                                    <div className="p-1.5 rounded-full bg-sidebar-primary flex-shrink-0">
-                                        <BellRing className="w-5 h-5 text-sidebar-primary-foreground" />
+                                    <div className="attention-icon-chip">
+                                        <BellRing className="w-5 h-5" />
                                     </div>
                                     <p className="text-base font-semibold truncate max-w-40 sm:max-w-60">
                                         {responseAlert.title}

@@ -52,9 +52,7 @@ export function PWAInstallPrompt() {
                         <Download className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                        <CardTitle className="text-sm">
-                            Install Arkim
-                        </CardTitle>
+                        <CardTitle className="text-sm">Install Arkim</CardTitle>
                         <CardDescription className="text-xs">
                             Get the native app experience
                         </CardDescription>

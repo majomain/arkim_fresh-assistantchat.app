@@ -1,5 +1,12 @@
+import { isAuthBypassEnabled } from '@/config/devAuthBypass';
+import { getMockAssetWithThreads, getMockAssets } from '@/mocks/devMockData';
+import {
+    AssetDetail,
+    AssetDetailList,
+    AssetWithThreads,
+} from '@/types/equipment/asset';
+
 import { apiClientCore as apiClient } from './apiClient';
-import { AssetDetail, AssetDetailList, AssetWithThreads } from '@/types/equipment/asset';
 
 const equipmentService = {
     // get list of equipment based on a specific location (with searchable filter)
@@ -7,6 +14,10 @@ const equipmentService = {
         siteId: string,
         search?: string | null,
     ): Promise<AssetDetailList> => {
+        if (isAuthBypassEnabled()) {
+            return getMockAssets(siteId, search);
+        }
+
         const queryParams = new URLSearchParams();
 
         if (siteId) {
@@ -25,6 +36,10 @@ const equipmentService = {
     },
 
     getById: async (id: string): Promise<AssetWithThreads> => {
+        if (isAuthBypassEnabled()) {
+            return getMockAssetWithThreads(id);
+        }
+
         const response = await apiClient.get<AssetWithThreads>(
             `/equipment?id=${encodeURIComponent(id)}`,
         );
@@ -32,10 +47,11 @@ const equipmentService = {
     },
 
     create: async (asset: AssetDetail) => {
-        const response = await apiClient.post(
-            '/equipment',
-            asset,
-        );
+        if (isAuthBypassEnabled()) {
+            return { ...asset, id: asset.id || `asset-${Date.now()}` };
+        }
+
+        const response = await apiClient.post('/equipment', asset);
         return response.data;
     },
 };

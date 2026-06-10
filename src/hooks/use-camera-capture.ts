@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useRef, useState } from "react";
+import { useRef, useState } from 'react';
 
 // ── Platform detection ────────────────────────────────────────────────────────
 // iOS Safari ignores `capture` on ALL file inputs and always shows its own
@@ -17,7 +17,11 @@ function isAndroidDevice() {
     return /Android/i.test(navigator.userAgent);
 }
 
-export function useCameraCapture({ onCapture }: { onCapture: (file: File) => void }) {
+export function useCameraCapture({
+    onCapture,
+}: {
+    onCapture: (file: File) => void;
+}) {
     // Ref for the hidden <input capture="environment"> used on Android
     const cameraInputRef = useRef<HTMLInputElement>(null);
     // Controls the desktop WebcamModal

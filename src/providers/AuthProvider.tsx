@@ -1,15 +1,22 @@
 'use client';
 
-import { errorToast } from '@/components/ui/sonner';
 import { STORAGE_KEYS } from '@/config/constant';
+import {
+    getDevMockContext,
+    isAuthBypassEnabled,
+    setupDevAuthSession,
+} from '@/config/devAuthBypass';
 import { AuthContext, UserType } from '@/contexts/AuthContext';
 import authService from '@/services/api/authService';
 import oidcAuthService from '@/services/auth/oidcAuthService';
 import { UserDetail } from '@/types/user/user';
-import { clearAllDraft } from '@/utils/draft-mechanism';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { errorToast } from '@/components/ui/sonner';
+
+import { clearAllDraft } from '@/utils/draft-mechanism';
 
 export default function AuthProvider({
     children,
@@ -50,7 +57,7 @@ export default function AuthProvider({
             theme: context.user.theme,
             language: context.user.language,
             defaultSite: context.user.defaultSite,
-            assignedSites: context.user.assignedSites
+            assignedSites: context.user.assignedSites,
         });
 
         setThemeRef.current(context.user?.theme ?? 'dark');
@@ -81,139 +88,155 @@ export default function AuthProvider({
         }
     }, []);
 
-    const loadSession = useCallback(async (route?: string) => {
-        // to prevent multiple concurrent calls to loadSession which can cause race conditions and inconsistent state during callbacks from oidcAuthService.signIn and signOut
-        if (typeof window !== 'undefined' && window.location.pathname === '/signin-oidc') {
-            setLoading(false);
-            loadingRef.current = false;
-            return;
-        }
-
-        // If a logout is in progress, skip all auth checks — the signOut flow
-        // will redirect via window.location, no router navigation needed here.
-        // This prevents a Safari-specific infinite loop where router.replace('/login')
-        // triggers an RSC fetch that Safari blocks (ITP / cross-origin context after
-        // the Cognito redirect), causing Next.js to fall back to a full page reload
-        // which re-mounts AuthProvider and repeats the cycle endlessly.
-        if (oidcAuthService.isSigningOut()) {
-            setLoading(false);
-            loadingRef.current = false;
-            return;
-        }
-
-        // Avoid a redundant router.replace('/login') when already on /login.
-        // On Safari, that navigation triggers an RSC fetch which fails after a
-        // cross-origin Cognito redirect, causing an infinite reload loop.
-        const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/login';
-
-        if (loadingRef.current) return;
-        loadingRef.current = true;
-        setLoading(true);
-
-        try {
-            let authenticated = oidcAuthService.isAuthenticated();
-
-            if (!authenticated) {
-                try {
-                    const response = await authService.refreshTokens();
-                    if (response.idToken) {
-                        oidcAuthService.setAuthToken(response.idToken);
-                        authenticated = true;
-                    }
-                } catch {
-                    // No valid session — user needs to login
-                }
-            }
-
-            if (!authenticated) {
-                if (!isLoginPage) {
-                    clearLocalSession('/login');
-                }
+    const loadSession = useCallback(
+        async (route?: string) => {
+            // to prevent multiple concurrent calls to loadSession which can cause race conditions and inconsistent state during callbacks from oidcAuthService.signIn and signOut
+            if (
+                typeof window !== 'undefined' &&
+                window.location.pathname === '/signin-oidc'
+            ) {
+                setLoading(false);
+                loadingRef.current = false;
                 return;
             }
 
-            // Check if company is selected
-            const selectedCompanyId = localStorage.getItem(
-                STORAGE_KEYS.SELECTED_COMPANY_ID,
-            );
+            // Avoid a redundant router.replace('/login') when already on /login.
+            // On Safari, that navigation triggers an RSC fetch which fails after a
+            // cross-origin Cognito redirect, causing an infinite reload loop.
+            const isLoginPage =
+                typeof window !== 'undefined' &&
+                window.location.pathname === '/login';
 
-            if (!selectedCompanyId) {
-                console.log(
-                    'No company selected, user context will be loaded after company selection',
-                );
-                setUser(null);
-                routerRef.current.replace('/company-select');
-                return;
-            }
+            if (loadingRef.current) return;
+            loadingRef.current = true;
+            setLoading(true);
 
-            let context = null;
             try {
-                context = await authService.getContext();
-            } catch (err) {
-                console.error('Failed to fetch context:', err);
-                // Context fetch failed — clear local session only, don't full-logout
-                if (!isLoginPage) {
-                    clearLocalSession('/login');
+                if (isAuthBypassEnabled()) {
+                    setupDevAuthSession();
+                    const context = getDevMockContext();
+                    saveUserDetail(context);
+                    if (route) routerRef.current.replace(route);
+                    return;
                 }
-                return;
+
+                // If a logout is in progress, skip auth checks (Safari Cognito redirect loop guard).
+                if (oidcAuthService.isSigningOut()) {
+                    return;
+                }
+
+                let authenticated = oidcAuthService.isAuthenticated();
+
+                if (!authenticated) {
+                    try {
+                        const response = await authService.refreshTokens();
+                        if (response.idToken) {
+                            oidcAuthService.setAuthToken(response.idToken);
+                            authenticated = true;
+                        }
+                    } catch {
+                        // No valid session — user needs to login
+                    }
+                }
+
+                if (!authenticated) {
+                    if (!isLoginPage) {
+                        clearLocalSession('/login');
+                    }
+                    return;
+                }
+
+                // Check if company is selected
+                const selectedCompanyId = localStorage.getItem(
+                    STORAGE_KEYS.SELECTED_COMPANY_ID,
+                );
+
+                if (!selectedCompanyId) {
+                    console.log(
+                        'No company selected, user context will be loaded after company selection',
+                    );
+                    setUser(null);
+                    routerRef.current.replace('/company-select');
+                    return;
+                }
+
+                let context = null;
+                try {
+                    context = await authService.getContext();
+                } catch (err) {
+                    console.error('Failed to fetch context:', err);
+                    // Context fetch failed — clear local session only, don't full-logout
+                    if (!isLoginPage) {
+                        clearLocalSession('/login');
+                    }
+                    return;
+                }
+
+                if (context.user.isAdmin || context.user.isTechnician) {
+                    saveUserDetail(context);
+
+                    if (route) routerRef.current.replace(route);
+                } else {
+                    localStorage.removeItem(STORAGE_KEYS.SELECTED_COMPANY_ID);
+
+                    errorToast({
+                        title: 'Forbidden',
+                        description:
+                            "You don't have the right permission to access the company",
+                    });
+
+                    // Permission denied — clear local state and redirect to company select
+                    // so the user can pick a different company without a full Cognito logout
+                    setUser(null);
+                    routerRef.current.replace('/company-select');
+                }
+            } catch (err) {
+                console.error('Failed to fetch session:', err);
+                clearLocalSession('/login');
+            } finally {
+                setLoading(false);
+                loadingRef.current = false;
             }
-
-            if (context.user.isAdmin || context.user.isTechnician) {
-                saveUserDetail(context);
-
-                if (route) routerRef.current.replace(route);
-            } else {
-                localStorage.removeItem(STORAGE_KEYS.SELECTED_COMPANY_ID);
-
-                errorToast({
-                    title: 'Forbidden',
-                    description: "You don't have the right permission to access the company",
-                });
-
-                // Permission denied — clear local state and redirect to company select
-                // so the user can pick a different company without a full Cognito logout
-                setUser(null);
-                routerRef.current.replace('/company-select');
-            }
-        } catch (err) {
-            console.error('Failed to fetch session:', err);
-            clearLocalSession('/login');
-        } finally {
-            setLoading(false);
-            loadingRef.current = false;
-        }
-    }, [saveUserDetail, clearLocalSession]); // router intentionally excluded — using routerRef
+        },
+        [saveUserDetail, clearLocalSession],
+    ); // router intentionally excluded — using routerRef
 
     const login = useCallback(async () => {
         await oidcAuthService.signIn('/');
     }, []);
 
     const updateLang = useCallback((lang: UserType['language']) => {
-        setUser(prev => {
+        setUser((prev) => {
             if (prev === null) return null;
             return { ...prev, language: lang };
         });
     }, []);
 
-    const refreshSession = useCallback(async (route?: string) => {
-        // Reset the guard so a manual refresh is always allowed
-        loadingRef.current = false;
-        await loadSession(route);
-    }, [loadSession]);
+    const refreshSession = useCallback(
+        async (route?: string) => {
+            // Reset the guard so a manual refresh is always allowed
+            loadingRef.current = false;
+            await loadSession(route);
+        },
+        [loadSession],
+    );
 
     // Run once on mount — loadSession is stable so this won't loop
     useEffect(() => {
         loadSession();
     }, [loadSession]);
 
-    const contextValue = useMemo(() => ({
-        user,
-        loading,
-        login,
-        logout,
-        refreshSession,
-        updateLang,
-    }), [user, loading, login, logout, refreshSession, updateLang]);
+    const contextValue = useMemo(
+        () => ({
+            user,
+            loading,
+            login,
+            logout,
+            refreshSession,
+            updateLang,
+        }),
+        [user, loading, login, logout, refreshSession, updateLang],
+    );
 
     return (
         <AuthContext.Provider value={contextValue}>

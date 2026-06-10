@@ -1,5 +1,11 @@
+import { isAuthBypassEnabled } from '@/config/devAuthBypass';
+import { filterMockWorkOrders } from '@/mocks/devMockData';
+import {
+    WorkOrderDetailList,
+    WorkOrderStatus,
+} from '@/types/workOrder/workOrder';
+
 import { apiClientCore as apiClient } from './apiClient';
-import { WorkOrderDetailList, WorkOrderStatus } from '@/types/workOrder/workOrder';
 
 const workOrderService = {
     // get user specific work orders using filters
@@ -8,9 +14,9 @@ const workOrderService = {
         siteId?: string | null,
         assetId?: string | null,
         status?: WorkOrderStatus | null,
-        search?: string | null
+        search?: string | null,
     ): Promise<WorkOrderDetailList> => {
-        let endDate = null;
+        let endDate: string | null = null;
         if (currentDate) {
             const offsetMs = currentDate.getTimezoneOffset() * 60 * 1000;
             const localDate = new Date(currentDate.getTime() - offsetMs);
@@ -31,8 +37,18 @@ const workOrderService = {
         if (endDate) {
             queryParams.append('endDate', endDate);
         }
-        if(search){
+        if (search) {
             queryParams.append('search', search);
+        }
+
+        if (isAuthBypassEnabled()) {
+            return filterMockWorkOrders({
+                siteId,
+                assetId,
+                status,
+                search,
+                endDate,
+            });
         }
 
         const queryString = queryParams.toString();

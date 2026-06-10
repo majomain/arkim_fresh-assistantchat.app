@@ -1,12 +1,11 @@
-'use client'
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+'use client';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WorkOrdersSkeleton({ count }: { count?: number }) {
     return Array.from({ length: count ?? 7 }).map((_, index) => (
-        <Card
-            key={index}
-        >
+        <Card key={index}>
             <CardContent className="flex flex-col gap-2 animate-pulse">
                 <div className="flex flex-row items-center justify-between">
                     <Skeleton className="h-5 w-40" />

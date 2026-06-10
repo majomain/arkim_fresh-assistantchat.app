@@ -14,19 +14,23 @@ const buttonVariants = cva(
                 bevel: 'bg-primary text-primary-foreground shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
                 default:
                     'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
-                success_bevel: 'bg-success text-white shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
-                success:
-                    'bg-success text-white shadow-xs hover:bg-success/90',
-                destructive_bevel: 'bg-destructive text-white shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
+                success_bevel:
+                    'bg-success text-white shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
+                success: 'bg-success text-white shadow-xs hover:bg-success/90',
+                destructive_bevel:
+                    'bg-destructive text-white shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
                 destructive:
                     'bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
-                outline_bevel: 'border bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
+                outline_bevel:
+                    'border bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
                 outline:
                     'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
-                secondary_bevel: 'bg-secondary text-secondary-foreground hover:bg-secondary/60 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
+                secondary_bevel:
+                    'bg-secondary text-secondary-foreground hover:bg-secondary/60 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
                 secondary:
                     'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/60',
-                ghost_bevel: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
+                ghost_bevel:
+                    'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 shadow-sm shadow-[0px_3px_0px_0px_var(--btn-shadow)] inset-shadow-sm inset-shadow-transparent hover:shadow-transparent hover:inset-shadow-black active:shadow-transparent active:inset-shadow-black',
                 ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
                 link: 'text-link underline-offset-4 underline hover:text-link/80',
             },
@@ -54,8 +58,8 @@ function Button({
 }: React.ComponentProps<'button'> & {
     loading?: boolean;
 } & VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-}) {
+        asChild?: boolean;
+    }) {
     const Comp = asChild ? Slot : 'button';
 
     return (

@@ -31,15 +31,16 @@ interface ToastProps {
 const ErrorToast = ({ description, title }: ToastProps) => {
     return (
         <div className="border-1 border-muted bg-card shadow-md shadow-card-shadow flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
-            <XCircle className="size-5 text-destructive font-bold" strokeWidth={2} />
+            <XCircle
+                className="size-5 text-destructive font-bold"
+                strokeWidth={2}
+            />
 
             <div className="flex flex-1 items-center">
                 <div className="w-full">
                     <p className="font-semibold text-xs">{title}</p>
                     {description ? (
-                        <p className="mt-0.5 text-xs">
-                            {description}
-                        </p>
+                        <p className="mt-0.5 text-xs">{description}</p>
                     ) : null}
                 </div>
             </div>
@@ -50,15 +51,16 @@ const ErrorToast = ({ description, title }: ToastProps) => {
 const SuccessToast = ({ description, title }: ToastProps) => {
     return (
         <div className="border-1 border-muted bg-card shadow-md shadow-card-shadow flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
-            <CheckCircle2 className="size-5 text-success font-bold" strokeWidth={2} />
+            <CheckCircle2
+                className="size-5 text-success font-bold"
+                strokeWidth={2}
+            />
 
             <div className="flex flex-1 items-center">
                 <div className="w-full">
                     <p className="font-semibold text-xs">{title}</p>
                     {description ? (
-                        <p className="mt-0.5 text-xs">
-                            {description}
-                        </p>
+                        <p className="mt-0.5 text-xs">{description}</p>
                     ) : null}
                 </div>
             </div>

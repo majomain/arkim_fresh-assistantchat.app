@@ -2,6 +2,7 @@
 
 import { useDraggableCard } from '@/hooks/use-draggable-card';
 import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
 import SuccessSvg from '@/components/ui/success-svg/success-svg';
 
@@ -20,7 +21,9 @@ export default function AssetExist({ assetId }: { assetId: string }) {
                 href={`/asset?id=${assetId}`}
                 onClick={() => closeCard('onboard')}
             >
-                <Button className="w-full" variant="bevel">Start Chat</Button>
+                <Button className="w-full" variant="bevel">
+                    Start Chat
+                </Button>
             </Link>
         </div>
     );

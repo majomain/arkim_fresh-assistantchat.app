@@ -291,27 +291,41 @@ export default function ThreadPage() {
                                         <button
                                             onClick={() => loadDialog('report')}
                                             style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: 6,
-                                                fontSize: 14, fontWeight: 600, padding: '9px 16px', borderRadius: 3,
-                                                background: 'var(--st-done-fill)',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                fontSize: 14,
+                                                fontWeight: 600,
+                                                padding: '9px 16px',
+                                                borderRadius: 3,
+                                                background:
+                                                    'var(--st-done-fill)',
                                                 color: 'var(--st-done)',
                                                 border: '1px solid color-mix(in srgb, var(--st-done) 28%, transparent)',
-                                                cursor: 'pointer', transition: 'filter 140ms',
+                                                cursor: 'pointer',
+                                                transition: 'filter 140ms',
                                             }}
                                         >
-                                            <CheckCircle2 className="size-4" /> Report
+                                            <CheckCircle2 className="size-4" />{' '}
+                                            Report
                                         </button>
 
                                         {/* Close — neutral/quiet */}
                                         <button
                                             onClick={() => loadDialog('close')}
                                             style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: 6,
-                                                fontSize: 14, fontWeight: 600, padding: '9px 16px', borderRadius: 3,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                fontSize: 14,
+                                                fontWeight: 600,
+                                                padding: '9px 16px',
+                                                borderRadius: 3,
                                                 background: 'var(--surface-2)',
                                                 color: 'var(--muted-col)',
                                                 border: '1px solid var(--border-col)',
-                                                cursor: 'pointer', transition: 'background 140ms',
+                                                cursor: 'pointer',
+                                                transition: 'background 140ms',
                                             }}
                                         >
                                             <Archive className="size-4" /> Close
@@ -320,55 +334,125 @@ export default function ThreadPage() {
                                         {/* Create WO — accent-filled */}
                                         {!currentThread?.startedFromWorkOrder && (
                                             <button
-                                                onClick={() => setWorkOrderDialogOpen(true)}
+                                                onClick={() =>
+                                                    setWorkOrderDialogOpen(true)
+                                                }
                                                 style={{
-                                                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                                                    fontSize: 14, fontWeight: 600, padding: '9px 16px', borderRadius: 3,
-                                                    background: 'var(--accent-col)',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: 6,
+                                                    fontSize: 14,
+                                                    fontWeight: 600,
+                                                    padding: '9px 16px',
+                                                    borderRadius: 3,
+                                                    background:
+                                                        'var(--accent-col)',
                                                     color: 'var(--on-accent)',
                                                     border: 'none',
-                                                    cursor: 'pointer', transition: 'filter 140ms',
+                                                    cursor: 'pointer',
+                                                    transition: 'filter 140ms',
                                                 }}
                                             >
-                                                <ClipboardList className="size-4" /> Create WO
+                                                <ClipboardList className="size-4" />{' '}
+                                                Create WO
                                             </button>
                                         )}
                                     </div>
 
                                     {/* Confirmation dialog — spec §6 */}
-                                    <Dialog open={open} onOpenChange={() => setOpen(!open)}>
+                                    <Dialog
+                                        open={open}
+                                        onOpenChange={() => setOpen(!open)}
+                                    >
                                         <DialogTrigger />
-                                        <DialogContent className="max-w-sm" hideCloseButton style={{ borderRadius: 4, border: '1px solid var(--border-col)', background: 'var(--surface)' }}>
+                                        <DialogContent
+                                            className="max-w-sm"
+                                            hideCloseButton
+                                            style={{
+                                                borderRadius: 4,
+                                                border: '1px solid var(--border-col)',
+                                                background: 'var(--surface)',
+                                            }}
+                                        >
                                             <DialogHeader>
-                                                <DialogTitle style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-strong)', textAlign: 'left' }}>
+                                                <DialogTitle
+                                                    style={{
+                                                        fontSize: 16,
+                                                        fontWeight: 600,
+                                                        color: 'var(--text-strong)',
+                                                        textAlign: 'left',
+                                                    }}
+                                                >
                                                     Confirmation required
                                                 </DialogTitle>
                                                 <DialogDescription />
                                             </DialogHeader>
-                                            <p style={{ fontSize: 14, color: 'var(--text)', lineHeight: 1.55, marginTop: 2 }}>
-                                                Are you sure you want to {selectedAction}{' '}
-                                                <strong>{currentThread?.title ?? ''}</strong>?
+                                            <p
+                                                style={{
+                                                    fontSize: 14,
+                                                    color: 'var(--text)',
+                                                    lineHeight: 1.55,
+                                                    marginTop: 2,
+                                                }}
+                                            >
+                                                Are you sure you want to{' '}
+                                                {selectedAction}{' '}
+                                                <strong>
+                                                    {currentThread?.title ?? ''}
+                                                </strong>
+                                                ?
                                             </p>
-                                            <p style={{ fontSize: 13, color: 'var(--muted-col)', marginTop: 6, lineHeight: 1.5 }}>
+                                            <p
+                                                style={{
+                                                    fontSize: 13,
+                                                    color: 'var(--muted-col)',
+                                                    marginTop: 6,
+                                                    lineHeight: 1.5,
+                                                }}
+                                            >
                                                 {selectedAction === 'report'
                                                     ? 'Arkim will summarize the thread, mark the work order done and archive it.'
                                                     : 'The thread closes and the work order is released back to the queue.'}
                                             </p>
-                                            <div style={{ display: 'flex', gap: 10, marginTop: 18 }}>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    gap: 10,
+                                                    marginTop: 18,
+                                                }}
+                                            >
                                                 <button
                                                     className="btn-accent"
-                                                    style={{ flex: 1, justifyContent: 'center' }}
+                                                    style={{
+                                                        flex: 1,
+                                                        justifyContent:
+                                                            'center',
+                                                    }}
                                                     onClick={() => {
                                                         setOpen(false);
-                                                        if (selectedAction) action(selectedAction, currentThread?.title ?? '', currentThread?.threadId ?? '');
+                                                        if (selectedAction)
+                                                            action(
+                                                                selectedAction,
+                                                                currentThread?.title ??
+                                                                    '',
+                                                                currentThread?.threadId ??
+                                                                    '',
+                                                            );
                                                     }}
                                                 >
-                                                    <CheckCircle2 className="size-4" /> Confirm
+                                                    <CheckCircle2 className="size-4" />{' '}
+                                                    Confirm
                                                 </button>
                                                 <button
                                                     className="btn-ghost"
-                                                    style={{ flex: 1, justifyContent: 'center' }}
-                                                    onClick={() => setOpen(false)}
+                                                    style={{
+                                                        flex: 1,
+                                                        justifyContent:
+                                                            'center',
+                                                    }}
+                                                    onClick={() =>
+                                                        setOpen(false)
+                                                    }
                                                 >
                                                     Cancel
                                                 </button>

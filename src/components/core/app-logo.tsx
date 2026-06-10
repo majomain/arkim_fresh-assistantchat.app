@@ -1,16 +1,17 @@
-'use client'
+'use client';
+
+import { useAuth } from '@/hooks/use-auth';
 import clsx, { type ClassValue } from 'clsx';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { buildLogosPath } from '@/utils/assets';
+import { emitHomePageVisited } from '@/utils/page-events';
 
 import { Button } from '../ui/button';
-import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useSidebar } from '../ui/sidebar';
-import { useAuth } from '@/hooks/use-auth';
-import { emitHomePageVisited } from '@/utils/page-events';
 
 export const AppLogo = ({ className }: { className?: ClassValue }) => {
     // flag for component mount
@@ -24,17 +25,18 @@ export const AppLogo = ({ className }: { className?: ClassValue }) => {
     useEffect(() => setMounted(true), []);
 
     // flag for dark mode after mount to avoid hydration problems
-    const isDark = mounted ? resolvedTheme === "dark" : null;
+    const isDark = mounted ? resolvedTheme === 'dark' : null;
 
     return (
-        <Link href="/" onClick={
-            () => {
+        <Link
+            href="/"
+            onClick={() => {
                 emitHomePageVisited();
                 if (isMobile) toggleSidebar();
-            }
-        }>
+            }}
+        >
             <Button
-                id='app-logo'
+                id="app-logo"
                 variant={'ghost'}
                 className={clsx(
                     'max-w-fit p-0 px-1',
@@ -42,8 +44,13 @@ export const AppLogo = ({ className }: { className?: ClassValue }) => {
                     className,
                 )}
             >
-
-                <img src={buildLogosPath(isDark ? 'logo-dark.svg' : 'logo-light.svg')} className='block w-auto h-7' alt='Arkim logo' />
+                <img
+                    src={buildLogosPath(
+                        isDark ? 'logo-dark.svg' : 'logo-light.svg',
+                    )}
+                    className="block w-auto h-7"
+                    alt="Arkim logo"
+                />
             </Button>
         </Link>
     );

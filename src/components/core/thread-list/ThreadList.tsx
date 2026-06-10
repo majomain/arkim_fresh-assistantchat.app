@@ -1,14 +1,11 @@
-'use client'
+'use client';
 
-import { useAsset } from "@/hooks/use-asset";
-import ThreadListSkeleton from "./ThreadListSkeleton";
-import ThreadSelective from "./ThreadSelective";
+import { useAsset } from '@/hooks/use-asset';
+
+import ThreadListSkeleton from './ThreadListSkeleton';
+import ThreadSelective from './ThreadSelective';
 
 export default function ThreadList() {
     const { isAssetListLoading } = useAsset();
-    return isAssetListLoading
-        ?
-        <ThreadListSkeleton />
-        :
-        <ThreadSelective />
+    return isAssetListLoading ? <ThreadListSkeleton /> : <ThreadSelective />;
 }

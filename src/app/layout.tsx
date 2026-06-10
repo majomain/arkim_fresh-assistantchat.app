@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Mulish } from 'next/font/google';
+import { Mulish } from 'next/font/google';
+
 import './globals.css';
 import { Providers } from './providers';
 
@@ -7,14 +8,6 @@ const mulish = Mulish({
     subsets: ['latin'],
     variable: '--font-mulish',
     weight: ['300', '400', '500', '600'],
-    display: 'swap',
-});
-
-const cormorant = Cormorant_Garamond({
-    subsets: ['latin'],
-    variable: '--font-cormorant',
-    weight: ['400'],
-    style: ['italic'],
     display: 'swap',
 });
 
@@ -52,7 +45,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" suppressHydrationWarning className={`${mulish.variable} ${cormorant.variable}`}>
+        <html lang="en" suppressHydrationWarning className={mulish.variable}>
             <body>
                 <Providers>{children}</Providers>
             </body>

@@ -1,9 +1,11 @@
 'use client';
 
+import useImageError from '@/hooks/use-image-error';
 import { MessageType } from '@/providers/ChatProvider';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
+import ImageViewer, { ImageViewerProvider } from '@/components/ui/image-viewer';
 import { errorToast } from '@/components/ui/sonner';
 import {
     Tooltip,
@@ -13,15 +15,13 @@ import {
 
 import { cn } from '@/lib/utils';
 
+import MessageRating from './MessageRating';
 import ResponseMaker from './ResponseMaker';
 import ThoughtProcess from './ThoughtProcess';
-import MessageRating from './MessageRating';
-import ImageViewer, { ImageViewerProvider } from '@/components/ui/image-viewer';
-import useImageError from '@/hooks/use-image-error';
 
-export default function Messages({ messages }: { messages: MessageType[]}) {
+export default function Messages({ messages }: { messages: MessageType[] }) {
     const [copiedId, setCopiedId] = useState<string | null>(null);
-    const {handleImageError} = useImageError();
+    const { handleImageError } = useImageError();
     // track message IDs that have already played their entrance animation so
     // they don't re-animate on every re-render (e.g. during parent state changes)
     const animatedIds = useRef<Set<string>>(new Set());
@@ -57,13 +57,13 @@ export default function Messages({ messages }: { messages: MessageType[]}) {
                         style={
                             isNew
                                 ? {
-                                    animation:
-                                        'message-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                                    // stagger first load; cap so it doesn't feel sluggish
-                                    animationDelay: `${Math.min(idx * 25, 100)}ms`,
-                                    opacity: 0,
-                                    willChange: 'opacity, transform',
-                                }
+                                      animation:
+                                          'message-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                                      // stagger first load; cap so it doesn't feel sluggish
+                                      animationDelay: `${Math.min(idx * 25, 100)}ms`,
+                                      opacity: 0,
+                                      willChange: 'opacity, transform',
+                                  }
                                 : undefined
                         }
                     >
@@ -75,28 +75,49 @@ export default function Messages({ messages }: { messages: MessageType[]}) {
                             />
                         )}
 
-                        <div className={cn('flex', isUser ? 'group justify-end items-end flex-col' : 'justify-start')}>
-                            <div className={cn(
-                                'py-2 px-3',
-                                isUser ? 'bg-muted rounded-lg lg:max-w-[60%]' : 'max-w-full',
-                            )}>
-                                <ResponseMaker content={message.content} />
-                                {message.imageUrls && message.imageUrls.length > 0 && (
-                                    <ImageViewerProvider>
-                                        <div className="flex flex-wrap gap-1.5 mt-2">
-                                            {message.imageUrls.map((url, i) => (
-                                                <ImageViewer key={`msg-img-${i}`} url={url as string}>
-                                                    <img
-                                                        src={url}
-                                                        alt=""
-                                                        className="h-20 w-20 rounded object-cover border border-muted cursor-pointer"
-                                                        onError={() => handleImageError(url)}
-                                                    />
-                                                </ImageViewer>
-                                            ))}
-                                        </div>
-                                    </ImageViewerProvider>
+                        <div
+                            className={cn(
+                                'flex',
+                                isUser
+                                    ? 'group justify-end items-end flex-col'
+                                    : 'justify-start',
+                            )}
+                        >
+                            <div
+                                className={cn(
+                                    'py-2 px-3',
+                                    isUser
+                                        ? 'bg-muted rounded-lg lg:max-w-[60%]'
+                                        : 'max-w-full',
                                 )}
+                            >
+                                <ResponseMaker content={message.content} />
+                                {message.imageUrls &&
+                                    message.imageUrls.length > 0 && (
+                                        <ImageViewerProvider>
+                                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                                {message.imageUrls.map(
+                                                    (url, i) => (
+                                                        <ImageViewer
+                                                            key={`msg-img-${i}`}
+                                                            url={url as string}
+                                                        >
+                                                            <img
+                                                                src={url}
+                                                                alt=""
+                                                                className="h-20 w-20 rounded object-cover border border-muted cursor-pointer"
+                                                                onError={() =>
+                                                                    handleImageError(
+                                                                        url,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </ImageViewer>
+                                                    ),
+                                                )}
+                                            </div>
+                                        </ImageViewerProvider>
+                                    )}
 
                                 {/* copy — assistant row (always visible) */}
                                 {!isUser && (

@@ -10,6 +10,6 @@ export interface LocationDetail {
         dateFormat?: string | null;
         timeFormat?: string | null;
     } | null;
-};
+}
 
 export type LocationDetailList = LocationDetail[];

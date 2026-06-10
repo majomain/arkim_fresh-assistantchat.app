@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import ArkimLoader from "@/components/core/ArkimLoader";
+import ArkimLoader from '@/components/core/ArkimLoader';
 
 export default function PageLoader() {
     return (
@@ -8,5 +8,5 @@ export default function PageLoader() {
             {/* Branded mark loader — spec §8 (no generic spinner) */}
             <ArkimLoader size={56} label="Loading…" />
         </div>
-    )
+    );
 }

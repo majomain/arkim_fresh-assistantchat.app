@@ -1,7 +1,9 @@
 'use client';
 
+import oidcAuthService from '@/services/auth/oidcAuthService';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
 import {
     AlertDialog,
     AlertDialogContent,
@@ -12,7 +14,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import oidcAuthService from '@/services/auth/oidcAuthService';
 
 export default function SignInOidcCallbackPage() {
     const router = useRouter();

@@ -1,7 +1,10 @@
-'use client'
-import { useState } from "react";
+'use client';
 
-export default function useCopyToClipboard({ copiedDuration = 3000 }: { copiedDuration?: number } = {}) {
+import { useState } from 'react';
+
+export default function useCopyToClipboard({
+    copiedDuration = 3000,
+}: { copiedDuration?: number } = {}) {
     const [isCopied, setIsCopied] = useState<boolean>(false);
 
     const copyToClipboard = (value: string) => {

@@ -1,14 +1,22 @@
 import { PopoverProps } from '@radix-ui/react-popover';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+
+import {
+    disableNotification,
+    enableNotification,
+    notificationsEnabled,
+} from '@/utils/web-notification';
+
 import { Button } from '../ui/button';
 import { DialogDescription, DialogTitle } from '../ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Switch } from '../ui/switch';
-import { disableNotification, enableNotification, notificationsEnabled } from '@/utils/web-notification';
 
 const PushEmailPopover = ({ ...props }: PopoverProps) => {
-    const [enabled, setEnabled] = useState<boolean>(() => notificationsEnabled());
+    const [enabled, setEnabled] = useState<boolean>(() =>
+        notificationsEnabled(),
+    );
 
     function togglePushNotificationSetting(checked: boolean) {
         setEnabled(checked);
@@ -27,7 +35,10 @@ const PushEmailPopover = ({ ...props }: PopoverProps) => {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between gap-5">
                         <span className="text-sm font-medium">Push</span>
-                        <Switch checked={enabled} onCheckedChange={togglePushNotificationSetting} />
+                        <Switch
+                            checked={enabled}
+                            onCheckedChange={togglePushNotificationSetting}
+                        />
                     </div>
                 </div>
             </PopoverContent>
@@ -50,8 +61,8 @@ export const ProfileSettingsNotifications = () => {
                     <PushEmailPopover open={isOpen} onOpenChange={setIsOpen} />
                 </div>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                    Get notified when Medes responds to requests that take
-                    time, like research or deep thinking.
+                    Get notified when Medes responds to requests that take time,
+                    like research or deep thinking.
                 </p>
             </div>
         </div>

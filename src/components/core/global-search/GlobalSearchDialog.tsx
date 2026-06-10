@@ -1,14 +1,22 @@
-'use client'
+'use client';
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../../ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
+import { useDebounce } from '@/hooks/use-debounce';
 import { SearchIcon } from 'lucide-react';
 import { useState } from 'react';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '../../ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 import Search from '../filters/Search';
-import WorkOrderSearch from './WorkOrderSearch';
-import { useDebounce } from '@/hooks/use-debounce';
 import AssetSearch from './AssetSearch';
 import ThreadSearch from './ThreadSearch';
+import WorkOrderSearch from './WorkOrderSearch';
 
 type TabKey = 'work-order' | 'asset' | 'thread';
 
@@ -27,66 +35,96 @@ export default function GlobalSearchDialog() {
 
     // close the dialog with cleanup
     function closeDialog() {
-        setOpen(false); clearStates();
+        setOpen(false);
+        clearStates();
     }
 
-    return <Dialog open={open}
-        onOpenChange={(isOpen) => {
-            setOpen(isOpen);
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                setOpen(isOpen);
 
-            if (!isOpen) {
-                closeDialog();
-            }
-        }} >
-        <DialogTrigger className='w-full cursor-pointer rounded-md hover:bg-sidebar-accent' asChild>
-          <div className='w-full flex flex-row items-center gap-2 px-2 py-1.5 group/search'>
-              <SearchIcon className='!text-muted-foreground size-4 group-hover/search:!text-foreground' />
+                if (!isOpen) {
+                    closeDialog();
+                }
+            }}
+        >
+            <DialogTrigger
+                className="w-full cursor-pointer rounded-md hover:bg-sidebar-accent"
+                asChild
+            >
+                <div className="w-full flex flex-row items-center gap-2 px-2 py-1.5 group/search">
+                    <SearchIcon className="!text-muted-foreground size-4 group-hover/search:!text-foreground" />
 
-            <span className="group-data-[collapsible=icon]:hidden text-foreground">Search</span>
-          </div>
-        </DialogTrigger>
-        <DialogContent onCloseAutoFocus={(e) => {
-            e.preventDefault();
-        }}>
-            <DialogHeader>
-                <DialogTitle>
-                    Search
-                </DialogTitle>
-                <DialogDescription />
-            </DialogHeader>
-
-            <Tabs value={currentTab}
-                onValueChange={(value) => setCurrentTab(value as TabKey)}
-                className="w-full flex flex-col gap-8 -mt-2">
-                <div className='flex flex-col gap-1'>
-                    <TabsList className='bg-transparent'>
-                        <TabsTrigger value="work-order" className='text-xs'>Work Orders</TabsTrigger>
-                        <TabsTrigger value="asset" className='text-xs'>Assets</TabsTrigger>
-                        <TabsTrigger value="thread" className='text-xs'>Open Threads</TabsTrigger>
-                    </TabsList>
-
-                    <Search
-                        search={search}
-                        setSearch={setSearch}
-                        placeHolder='Search here...'
-                        className='mt-2 bg-transparent'
-                    />
+                    <span className="group-data-[collapsible=icon]:hidden text-foreground">
+                        Search
+                    </span>
                 </div>
+            </DialogTrigger>
+            <DialogContent
+                onCloseAutoFocus={(e) => {
+                    e.preventDefault();
+                }}
+            >
+                <DialogHeader>
+                    <DialogTitle>Search</DialogTitle>
+                    <DialogDescription />
+                </DialogHeader>
 
-                <div>
-                    <TabsContent value="work-order">
-                        <WorkOrderSearch isTyping={isTyping} search={debouncedSearch} closeDialog={closeDialog} />
-                    </TabsContent>
+                <Tabs
+                    value={currentTab}
+                    onValueChange={(value) => setCurrentTab(value as TabKey)}
+                    className="w-full flex flex-col gap-8 -mt-2"
+                >
+                    <div className="flex flex-col gap-1">
+                        <TabsList className="bg-transparent">
+                            <TabsTrigger value="work-order" className="text-xs">
+                                Work Orders
+                            </TabsTrigger>
+                            <TabsTrigger value="asset" className="text-xs">
+                                Assets
+                            </TabsTrigger>
+                            <TabsTrigger value="thread" className="text-xs">
+                                Open Threads
+                            </TabsTrigger>
+                        </TabsList>
 
-                    <TabsContent value="asset">
-                        <AssetSearch isTyping={isTyping} search={debouncedSearch} closeDialog={closeDialog} />
-                    </TabsContent>
+                        <Search
+                            search={search}
+                            setSearch={setSearch}
+                            placeHolder="Search here..."
+                            className="mt-2 bg-transparent"
+                        />
+                    </div>
 
-                    <TabsContent value="thread">
-                        <ThreadSearch isTyping={isTyping} search={debouncedSearch} closeDialog={closeDialog} />
-                    </TabsContent>
-                </div>
-            </Tabs>
-        </DialogContent>
-    </Dialog>;
+                    <div>
+                        <TabsContent value="work-order">
+                            <WorkOrderSearch
+                                isTyping={isTyping}
+                                search={debouncedSearch}
+                                closeDialog={closeDialog}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="asset">
+                            <AssetSearch
+                                isTyping={isTyping}
+                                search={debouncedSearch}
+                                closeDialog={closeDialog}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="thread">
+                            <ThreadSearch
+                                isTyping={isTyping}
+                                search={debouncedSearch}
+                                closeDialog={closeDialog}
+                            />
+                        </TabsContent>
+                    </div>
+                </Tabs>
+            </DialogContent>
+        </Dialog>
+    );
 }

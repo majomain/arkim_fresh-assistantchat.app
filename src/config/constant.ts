@@ -1,4 +1,4 @@
-import { getEnvironment } from "./environmentVariablesService";
+import { getEnvironment } from './environmentVariablesService';
 
 export const ISSUE_CODE = {
     BELOW_TEMPERATURE: '1',

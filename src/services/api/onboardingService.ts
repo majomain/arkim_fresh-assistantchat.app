@@ -1,6 +1,7 @@
 import { AssetDetail } from '@/types/equipment/asset';
-import { apiClientOnboarding as apiClient } from './apiClient';
 import { AssetDocumentList } from '@/types/equipment/document';
+
+import { apiClientOnboarding as apiClient } from './apiClient';
 
 interface OnboardInitPayload {
     label: string;
@@ -20,9 +21,7 @@ interface OnboardCompletePayload {
 
 const onboardingService = {
     getAssetById: async (assetId: string): Promise<AssetDetail> => {
-        const response = await apiClient.get<AssetDetail>(
-            `/assets/${assetId}`,
-        );
+        const response = await apiClient.get<AssetDetail>(`/assets/${assetId}`);
         return response.data;
     },
 
@@ -71,7 +70,11 @@ const onboardingService = {
         return response.data;
     },
 
-    getDocumentsByAssetAndModelId: async (assetId: string, assetModelId: string, search?: string | null): Promise<AssetDocumentList> => {
+    getDocumentsByAssetAndModelId: async (
+        assetId: string,
+        assetModelId: string,
+        search?: string | null,
+    ): Promise<AssetDocumentList> => {
         const response = await apiClient.get(
             `/documents?asset_id=${assetId}&asset_model_id=${assetModelId}&search=${search ?? ''}`,
         );

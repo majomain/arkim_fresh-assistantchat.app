@@ -1,4 +1,5 @@
-export type AssetDocumentStatus = 'pending'
+export type AssetDocumentStatus =
+    | 'pending'
     | 'ready_for_ingestion'
     | 'ingested'
     | 'completed'

@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { LocationDetail, LocationDetailList } from "@/types/location/location";
-import { createContext } from "react";
+import { LocationDetail, LocationDetailList } from '@/types/location/location';
+import { createContext } from 'react';
 
 export type LocationContextType = {
     locations: LocationDetailList;
@@ -9,12 +9,12 @@ export type LocationContextType = {
     isLoadingLocations: boolean;
     selectLocation: (locationId: string) => void;
     refreshLocations: () => void;
-}
+};
 
 export const LocationContext = createContext<LocationContextType>({
     locations: [],
     selectedLocation: null,
     isLoadingLocations: true,
-    selectLocation: () => { },
-    refreshLocations: () => { }
+    selectLocation: () => {},
+    refreshLocations: () => {},
 });

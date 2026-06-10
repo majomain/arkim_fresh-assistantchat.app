@@ -1,9 +1,22 @@
+import { UserType } from '@/contexts/AuthContext';
 import { useSignOutMutation } from '@/hooks/api/use-sign-out-mutation';
-import {
-    MyTheme,
-} from '@/stores/settings-store';
+import { useAuth } from '@/hooks/use-auth';
+import userService from '@/services/api/userService';
+import { MyTheme } from '@/stores/settings-store';
+import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
+
+import { errorToast, successToast } from '@/components/ui/sonner';
+
+import { cn } from '@/lib/utils';
+
+import {
+    Accordion,
+    AccordionContent,
+    AccordionHeader,
+    AccordionItem,
+} from '../ui/accordian';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,13 +37,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
-import userService from '@/services/api/userService';
-import { cn } from '@/lib/utils';
-import { Monitor, Moon, Sun } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { UserType } from '@/contexts/AuthContext';
-import { Accordion, AccordionContent, AccordionHeader, AccordionItem } from '../ui/accordian';
-import { errorToast, successToast } from '@/components/ui/sonner';
 
 const SelectTheme = () => {
     const { setTheme: setNextTheme, theme } = useTheme();
@@ -39,18 +45,42 @@ const SelectTheme = () => {
         {
             label: 'System',
             value: 'system',
-            icon: <Monitor className={theme === 'system' ? 'text-primary group-hover/siteTab:text-muted-foreground' : ''} />
+            icon: (
+                <Monitor
+                    className={
+                        theme === 'system'
+                            ? 'text-primary group-hover/siteTab:text-muted-foreground'
+                            : ''
+                    }
+                />
+            ),
         },
         {
             label: 'Light',
             value: 'light',
-            icon: <Sun className={theme === 'light' ? 'text-primary group-hover/siteTab:text-muted-foreground' : ''} />
+            icon: (
+                <Sun
+                    className={
+                        theme === 'light'
+                            ? 'text-primary group-hover/siteTab:text-muted-foreground'
+                            : ''
+                    }
+                />
+            ),
         },
         {
             label: 'Dark',
             value: 'dark',
-            icon: <Moon className={theme === 'dark' ? 'text-primary group-hover/siteTab:text-muted-foreground' : ''} />
-        }
+            icon: (
+                <Moon
+                    className={
+                        theme === 'dark'
+                            ? 'text-primary group-hover/siteTab:text-muted-foreground'
+                            : ''
+                    }
+                />
+            ),
+        },
     ];
 
     return (
@@ -66,17 +96,22 @@ const SelectTheme = () => {
                 {theme}
             </SelectTrigger>
             <SelectContent>
-                {
-                    availableThemes.map((t) =>
-                        <SelectItem key={`theme-${t.value}`} value={t.value} className={cn(
+                {availableThemes.map((t) => (
+                    <SelectItem
+                        key={`theme-${t.value}`}
+                        value={t.value}
+                        className={cn(
                             'group/siteTab flex flex-row items-center gap-2 my-1',
-                            { 'bg-sidebar-accent font-medium': theme === t.value }
-                        )}>
-                            <span>{t.icon}</span>
-                            {t.label}
-                        </SelectItem>
-                    )
-                }
+                            {
+                                'bg-sidebar-accent font-medium':
+                                    theme === t.value,
+                            },
+                        )}
+                    >
+                        <span>{t.icon}</span>
+                        {t.label}
+                    </SelectItem>
+                ))}
             </SelectContent>
         </Select>
     );
@@ -87,12 +122,12 @@ const SelectLanguage = () => {
     const availableLanguages = [
         {
             label: 'English',
-            value: 'en'
+            value: 'en',
         },
         {
             label: 'Español',
-            value: 'es'
-        }
+            value: 'es',
+        },
     ];
 
     return (
@@ -108,16 +143,21 @@ const SelectLanguage = () => {
                 <SelectValue />
             </SelectTrigger>
             <SelectContent>
-                {
-                    availableLanguages.map((lang) =>
-                        <SelectItem key={`language-${lang.value}`} value={lang.value} className={cn(
+                {availableLanguages.map((lang) => (
+                    <SelectItem
+                        key={`language-${lang.value}`}
+                        value={lang.value}
+                        className={cn(
                             'group/siteTab flex flex-row items-center gap-2 my-1',
-                            { 'bg-sidebar-accent font-medium': user?.language === lang.value }
-                        )}>
-                            {lang.label}
-                        </SelectItem>
-                    )
-                }
+                            {
+                                'bg-sidebar-accent font-medium':
+                                    user?.language === lang.value,
+                            },
+                        )}
+                    >
+                        {lang.label}
+                    </SelectItem>
+                ))}
             </SelectContent>
         </Select>
     );
@@ -129,9 +169,10 @@ const MIN_PASSWORD_LENGTH = 8;
 function validatePasswords(
     oldPass: string,
     newPass: string,
-    confirmPass: string
+    confirmPass: string,
 ): { oldPass?: string; newPass?: string; confirmPass?: string } {
-    const errors: { oldPass?: string; newPass?: string; confirmPass?: string } = {};
+    const errors: { oldPass?: string; newPass?: string; confirmPass?: string } =
+        {};
 
     if (!oldPass) {
         errors.oldPass = 'Current password is required.';
@@ -176,13 +217,20 @@ function PasswordField({
                 disabled={disabled}
                 className={cn(
                     'border p-1.5 rounded-md text-sm bg-transparent outline-none focus:ring-1 focus:ring-ring transition-colors disabled:opacity-50',
-                    error ? 'border-destructive focus:ring-destructive' : 'border-input'
+                    error
+                        ? 'border-destructive focus:ring-destructive'
+                        : 'border-input',
                 )}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
             />
             {/* Inline error — always occupies space to prevent layout jump */}
-            <p className={cn('text-xs text-destructive transition-opacity', error ? 'opacity-100' : 'opacity-0 select-none')}>
+            <p
+                className={cn(
+                    'text-xs text-destructive transition-opacity',
+                    error ? 'opacity-100' : 'opacity-0 select-none',
+                )}
+            >
                 {error ?? ' '}
             </p>
         </div>
@@ -193,7 +241,11 @@ function UpdatePassword() {
     const [oldPass, setOldPass] = useState('');
     const [newPass, setNewPass] = useState('');
     const [confirmPass, setConfirmPass] = useState('');
-    const [errors, setErrors] = useState<{ oldPass?: string; newPass?: string; confirmPass?: string }>({});
+    const [errors, setErrors] = useState<{
+        oldPass?: string;
+        newPass?: string;
+        confirmPass?: string;
+    }>({});
     const [isLoading, setIsLoading] = useState(false);
 
     // Clear a specific field's error as the user starts correcting it
@@ -203,7 +255,11 @@ function UpdatePassword() {
 
     async function updatePass() {
         // Run all validations first, show every error at once
-        const validationErrors = validatePasswords(oldPass, newPass, confirmPass);
+        const validationErrors = validatePasswords(
+            oldPass,
+            newPass,
+            confirmPass,
+        );
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
@@ -214,17 +270,24 @@ function UpdatePassword() {
 
         try {
             await userService.resetPassword(oldPass, newPass);
-            successToast({ title: 'Password updated', description: 'Your password has been changed successfully.' });
+            successToast({
+                title: 'Password updated',
+                description: 'Your password has been changed successfully.',
+            });
             // Reset form on success
             setOldPass('');
             setNewPass('');
             setConfirmPass('');
         } catch (err) {
             // Surface API errors on the relevant field where possible
-            const message = err instanceof Error ? err.message : 'Failed to update password.';
+            const message =
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to update password.';
             // Common API signals that the current password was wrong
-            const isWrongPassword =
-                message.toLowerCase().includes('invalid old password')
+            const isWrongPassword = message
+                .toLowerCase()
+                .includes('invalid old password');
 
             if (isWrongPassword) {
                 setErrors({ oldPass: 'Current password is incorrect.' });
@@ -239,29 +302,36 @@ function UpdatePassword() {
     return (
         <Accordion>
             <AccordionItem defaultOpen={false}>
-                <AccordionHeader>
-                    Update password
-                </AccordionHeader>
+                <AccordionHeader>Update password</AccordionHeader>
                 <AccordionContent smoothHide={true}>
                     <div className="flex flex-col gap-0.5 pt-1">
                         <PasswordField
                             label="Current Password"
                             value={oldPass}
-                            onChange={(v) => { setOldPass(v); clearError('oldPass'); }}
+                            onChange={(v) => {
+                                setOldPass(v);
+                                clearError('oldPass');
+                            }}
                             error={errors.oldPass}
                             disabled={isLoading}
                         />
                         <PasswordField
                             label="New Password"
                             value={newPass}
-                            onChange={(v) => { setNewPass(v); clearError('newPass'); }}
+                            onChange={(v) => {
+                                setNewPass(v);
+                                clearError('newPass');
+                            }}
                             error={errors.newPass}
                             disabled={isLoading}
                         />
                         <PasswordField
                             label="Confirm New Password"
                             value={confirmPass}
-                            onChange={(v) => { setConfirmPass(v); clearError('confirmPass'); }}
+                            onChange={(v) => {
+                                setConfirmPass(v);
+                                clearError('confirmPass');
+                            }}
                             error={errors.confirmPass}
                             disabled={isLoading}
                         />
@@ -323,9 +393,7 @@ export const ProfileSettingsGeneral = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                Sign Out
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>Sign Out</AlertDialogTitle>
                             <AlertDialogDescription>
                                 Are you sure you want to sign out?
                             </AlertDialogDescription>

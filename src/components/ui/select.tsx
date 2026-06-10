@@ -38,21 +38,21 @@ function SelectTrigger({
             data-size={size}
             className={cn(
                 // Layout & base
-                "flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs outline-none",
+                'flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs outline-none',
                 // Sizing
-                "data-[size=default]:h-9 data-[size=sm]:h-8",
+                'data-[size=default]:h-9 data-[size=sm]:h-8',
                 // Border & focus ring
-                "border-input focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                'border-input focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
                 // Placeholder & invalid
-                "data-[placeholder]:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
+                'data-[placeholder]:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
                 // Dark mode bg
-                "dark:bg-input/30 dark:hover:bg-input/50",
+                'dark:bg-input/30 dark:hover:bg-input/50',
                 // Transition
-                "transition-[color,box-shadow]",
+                'transition-[color,box-shadow]',
                 // Disabled
-                "disabled:cursor-not-allowed disabled:opacity-50",
+                'disabled:cursor-not-allowed disabled:opacity-50',
                 // SelectValue slot
-                "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
+                '*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2',
                 // Icon base
                 "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
                 // Icon color: muted by default, transitions to foreground on focus
@@ -133,13 +133,13 @@ function SelectItem({
             data-slot="select-item"
             className={cn(
                 // Layout & interaction
-                "relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1.5 pr-8 pl-2 text-sm outline-hidden select-none",
+                'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1.5 pr-8 pl-2 text-sm outline-hidden select-none',
                 // Disabled state
-                "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+                'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
                 // Focus/hover background + text
-                "focus:bg-sidebar-accent focus:text-accent-foreground",
+                'focus:bg-sidebar-accent focus:text-accent-foreground',
                 // ItemText slot
-                "*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+                '*:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2',
                 // Icon base
                 "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
                 // Icon color: muted by default, transitions to accent-foreground on focus/hover

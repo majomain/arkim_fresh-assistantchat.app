@@ -1,10 +1,16 @@
-'use client'
+'use client';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-import messagingService from "@/services/api/messagingService";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
-import { useState } from "react";
+import messagingService from '@/services/api/messagingService';
+import { ThumbsDown, ThumbsUp } from 'lucide-react';
+import { useState } from 'react';
+
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+import { cn } from '@/lib/utils';
 
 interface MessageRatingProps {
     threadId: string;
@@ -12,7 +18,11 @@ interface MessageRatingProps {
     rate: number;
 }
 
-export default function MessageRating({ threadId, messageId, rate: initialRate }: MessageRatingProps) {
+export default function MessageRating({
+    threadId,
+    messageId,
+    rate: initialRate,
+}: MessageRatingProps) {
     const [currentRate, setCurrentRate] = useState<number>(initialRate);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -43,17 +53,13 @@ export default function MessageRating({ threadId, messageId, rate: initialRate }
                         onClick={() => handleRate(true)}
                         disabled={isLoading}
                         type="button"
-                        className={cn(                            
-                            currentRate === 1
-                                ? "text-success"
-                                : ""
-                        )}
+                        className={cn(currentRate === 1 ? 'text-success' : '')}
                     >
-                        <ThumbsUp className={cn("w-4 h-4")} />
+                        <ThumbsUp className={cn('w-4 h-4')} />
                     </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                    {currentRate === 1 ? "Remove rating" : "Helpful"}
+                    {currentRate === 1 ? 'Remove rating' : 'Helpful'}
                 </TooltipContent>
             </Tooltip>
 
@@ -63,17 +69,15 @@ export default function MessageRating({ threadId, messageId, rate: initialRate }
                         onClick={() => handleRate(false)}
                         disabled={isLoading}
                         type="button"
-                        className={cn(                            
-                            currentRate === -1
-                                ? "text-destructive"
-                                : ""
+                        className={cn(
+                            currentRate === -1 ? 'text-destructive' : '',
                         )}
                     >
-                        <ThumbsDown className={cn("w-4 h-4")} />
+                        <ThumbsDown className={cn('w-4 h-4')} />
                     </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                    {currentRate === -1 ? "Remove rating" : "Not helpful"}
+                    {currentRate === -1 ? 'Remove rating' : 'Not helpful'}
                 </TooltipContent>
             </Tooltip>
         </div>

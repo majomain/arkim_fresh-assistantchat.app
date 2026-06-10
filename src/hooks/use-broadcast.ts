@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-export function useBroadcast<T>(channelName: string, onMessage?: (data: T) => void) {
+export function useBroadcast<T>(
+    channelName: string,
+    onMessage?: (data: T) => void,
+) {
     const channelRef = useRef<BroadcastChannel | null>(null);
     const onMessageRef = useRef(onMessage);
 
-    useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
+    useEffect(() => {
+        onMessageRef.current = onMessage;
+    }, [onMessage]);
 
     useEffect(() => {
         const channel = new BroadcastChannel(channelName);

@@ -1,15 +1,16 @@
 'use client';
 
-import { StreamingDataType } from '@/lib/streamline-chat-handler';
 import { MessageType, MessageUserRole } from '@/providers/ChatProvider';
 import { createContext } from 'react';
+
+import { StreamingDataType } from '@/lib/streamline-chat-handler';
 
 export type ResponseAlertType = {
     id: string;
     threadId: string;
     title: string;
     description: string;
-    timestamp?:number;
+    timestamp?: number;
 };
 
 type ChatContextType = {
@@ -29,7 +30,7 @@ type ChatContextType = {
             title: string;
         },
         role?: MessageUserRole,
-        attachmentUrls?: string[]
+        attachmentUrls?: string[],
     ) => void;
     responseAlerts: ResponseAlertType[] | [];
     removeResponseAlert: (id: string) => void;
@@ -43,15 +44,15 @@ export const ChatContext = createContext<ChatContextType>({
         isPosting: false,
         reasoning: {},
         response: '',
-        thinking: []
+        thinking: [],
     },
     areMessagesLoading: false,
     messages: [],
-    setMessages: (message: MessageType[] | []) => { },
-    postMessageAsync: async () => { },
+    setMessages: (message: MessageType[] | []) => {},
+    postMessageAsync: async () => {},
     responseAlerts: [],
-    removeResponseAlert: (id: string) => { },
+    removeResponseAlert: (id: string) => {},
     processingThreads: {},
     processedThreads: {},
-    removeProcessedThread: (id: string) => { },
+    removeProcessedThread: (id: string) => {},
 });

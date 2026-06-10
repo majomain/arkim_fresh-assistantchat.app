@@ -3,22 +3,52 @@
 import { Box, ClipboardList, MessageSquareText, PieChart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
 import { ProfileDropdown } from '../core/profile-dropdown';
 
 type Tab = {
     key: string;
     label: string;
     href: string;
-    icon: React.ComponentType<{ size?: number; strokeWidth?: number; style?: React.CSSProperties }>;
+    icon: React.ComponentType<{
+        size?: number;
+        strokeWidth?: number;
+        style?: React.CSSProperties;
+    }>;
     matches: (path: string) => boolean;
     hub?: boolean;
 };
 
 const TABS: Tab[] = [
-    { key: 'work',    label: 'Work',    href: '/work-orders',  icon: ClipboardList,     matches: p => p.startsWith('/work-orders') },
-    { key: 'assets',  label: 'Assets',  href: '/assets',       icon: Box,               matches: p => p.startsWith('/assets') || p.startsWith('/asset') },
-    { key: 'threads', label: 'Threads', href: '/open-threads', icon: MessageSquareText, matches: p => p.startsWith('/open-threads'), hub: true },
-    { key: 'stats',   label: 'Stats',   href: '/analytics',    icon: PieChart,          matches: p => p.startsWith('/analytics') },
+    {
+        key: 'work',
+        label: 'Work',
+        href: '/work-orders',
+        icon: ClipboardList,
+        matches: (p) => p.startsWith('/work-orders'),
+    },
+    {
+        key: 'assets',
+        label: 'Assets',
+        href: '/assets',
+        icon: Box,
+        matches: (p) => p.startsWith('/assets') || p.startsWith('/asset'),
+    },
+    {
+        key: 'threads',
+        label: 'Threads',
+        href: '/open-threads',
+        icon: MessageSquareText,
+        matches: (p) => p.startsWith('/open-threads'),
+        hub: true,
+    },
+    {
+        key: 'stats',
+        label: 'Stats',
+        href: '/analytics',
+        icon: PieChart,
+        matches: (p) => p.startsWith('/analytics'),
+    },
 ];
 
 /**
@@ -47,7 +77,7 @@ export default function MobileTabBar() {
                 height: 64,
             }}
         >
-            {TABS.map(tab => {
+            {TABS.map((tab) => {
                 const active = tab.matches(pathname);
                 const Icon = tab.icon;
                 return (
@@ -63,7 +93,9 @@ export default function MobileTabBar() {
                             justifyContent: 'center',
                             gap: 3,
                             textDecoration: 'none',
-                            color: active ? 'var(--accent-text)' : 'var(--muted-col)',
+                            color: active
+                                ? 'var(--accent-text)'
+                                : 'var(--muted-col)',
                             transition: 'color 140ms',
                             position: 'relative',
                         }}
@@ -101,7 +133,14 @@ export default function MobileTabBar() {
                 <div className="scale-90">
                     <ProfileDropdown />
                 </div>
-                <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: '0.2px', color: 'var(--muted-col)' }}>
+                <span
+                    style={{
+                        fontSize: 10.5,
+                        fontWeight: 500,
+                        letterSpacing: '0.2px',
+                        color: 'var(--muted-col)',
+                    }}
+                >
                     You
                 </span>
             </div>

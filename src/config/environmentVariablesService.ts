@@ -34,5 +34,5 @@ export const getAppConfig = () => {
 };
 
 export const getEnvironment = () => {
-  return process.env.NEXT_PUBLIC_ENVIRONMENT || 'dev';
+    return process.env.NEXT_PUBLIC_ENVIRONMENT || 'dev';
 };

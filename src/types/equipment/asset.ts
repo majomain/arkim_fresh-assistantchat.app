@@ -1,4 +1,4 @@
-import { ThreadDetailList } from "./thread";
+import { ThreadDetailList } from './thread';
 
 export type AssetStatusType = 'internal_review' | 'completed' | 'failed';
 
@@ -57,5 +57,5 @@ export interface AssetDetail {
 export type AssetDetailList = AssetDetail[];
 
 export interface AssetWithThreads extends AssetDetail {
-    threads: ThreadDetailList
-};
+    threads: ThreadDetailList;
+}

@@ -1,32 +1,46 @@
-'use client'
+'use client';
 
-import { SendHorizontalIcon, MicIcon, SquarePen, Loader2Icon, ImagePlus, Camera, X, GalleryHorizontal } from "lucide-react";
-import { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { TooltipIconButton } from "../TooltipIconButton";
-import { useChat } from "@/hooks/use-chat";
-import { cn } from "@/lib/utils";
-import { useSpeechToText } from "@/hooks/use-speech-to-text";
-import { errorToast, successToast } from "@/components/ui/sonner";
-import { useAsset } from "@/hooks/use-asset";
-import { useThread } from "@/hooks/use-thread";
-import ActionPopover from "../work-order/ActionPopover";
-import { ThreadAction } from "@/types/equipment/thread";
-import messagingService from "@/services/api/messagingService";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useCameraCapture, isIOSDevice } from "@/hooks/use-camera-capture";
-import { WebcamModal } from "./CameraCapture";
-import ImageViewer, { ImageViewerProvider } from "@/components/ui/image-viewer";
-import { useDraft } from "@/hooks/use-draft";
-import { usePathname } from "next/navigation";
-import useImageError from "@/hooks/use-image-error";
+import { useAsset } from '@/hooks/use-asset';
+import { isIOSDevice, useCameraCapture } from '@/hooks/use-camera-capture';
+import { useChat } from '@/hooks/use-chat';
+import { useDraft } from '@/hooks/use-draft';
+import useImageError from '@/hooks/use-image-error';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
+import { useThread } from '@/hooks/use-thread';
+import messagingService from '@/services/api/messagingService';
+import { ThreadAction } from '@/types/equipment/thread';
+import {
+    Camera,
+    GalleryHorizontal,
+    ImagePlus,
+    Loader2Icon,
+    MicIcon,
+    SendHorizontalIcon,
+    SquarePen,
+    X,
+} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import ImageViewer, { ImageViewerProvider } from '@/components/ui/image-viewer';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { errorToast, successToast } from '@/components/ui/sonner';
+
+import { cn } from '@/lib/utils';
+
+import { TooltipIconButton } from '../TooltipIconButton';
+import ActionPopover from '../work-order/ActionPopover';
+import { WebcamModal } from './CameraCapture';
 
 const MAX_HEIGHT_LINES = 10;
 const MAX_ATTACHMENT_IMAGES = 3;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const DRAFT_DEBOUNCE_MS = 400;
-
-
 
 // ── AttachPopover ─────────────────────────────────────────────────────────────
 // Behaviour differs per platform:
@@ -115,11 +129,31 @@ function AttachPopover({
     );
 }
 
-export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: string | null; isBento?: boolean }) {
+export default function TextArea({
+    assetTitle,
+    isBento = true,
+}: {
+    assetTitle?: string | null;
+    isBento?: boolean;
+}) {
     const { currentAssetId, currentAsset } = useAsset();
-    const { currentThreadId, currentThread, isThreadProcessing, closeThread, reportThread } = useThread();
-    const { postMessageAsync, sse, removeProcessedThread, messages } = useChat();
-    const { clearThreadDraft, clearAssetDraft, saveThreadDraft, saveAssetDraft, getAssetDraft, getThreadDraft } = useDraft();
+    const {
+        currentThreadId,
+        currentThread,
+        isThreadProcessing,
+        closeThread,
+        reportThread,
+    } = useThread();
+    const { postMessageAsync, sse, removeProcessedThread, messages } =
+        useChat();
+    const {
+        clearThreadDraft,
+        clearAssetDraft,
+        saveThreadDraft,
+        saveAssetDraft,
+        getAssetDraft,
+        getThreadDraft,
+    } = useDraft();
     const { handleImageError } = useImageError();
     const pathname = usePathname();
 
@@ -134,13 +168,21 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
     const dropZoneRef = useRef<HTMLDivElement>(null);
     const [overflow, setOverflow] = useState(false);
     const [value, setValue] = useState('');
-    const [pendingAttachmentUrls, setPendingAttachmentUrls] = useState<string[]>([]);
+    const [pendingAttachmentUrls, setPendingAttachmentUrls] = useState<
+        string[]
+    >([]);
     const [uploadingCount, setUploadingCount] = useState(0);
     const [isDragOver, setIsDragOver] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     // useCameraCapture handles: Android hidden input, desktop webcam modal,
     // and the branch logic between them — all in one place.
-    const { cameraInputRef, webcamOpen, closeWebcam, handleCameraClick, handleWebcamCapture } = useCameraCapture({
+    const {
+        cameraInputRef,
+        webcamOpen,
+        closeWebcam,
+        handleCameraClick,
+        handleWebcamCapture,
+    } = useCameraCapture({
         onCapture: (file) => handleWebcamFile(file),
     });
     const draftTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,39 +200,76 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
     // Set to false → restore effect runs, or sendMessage() clears the field
     const isDirtyRef = useRef(false);
 
-    const { isListening, transcript, isSupported, error, startListening, stopListening, resetTranscript } = useSpeechToText();
+    const {
+        isListening,
+        transcript,
+        isSupported,
+        error,
+        startListening,
+        stopListening,
+        resetTranscript,
+    } = useSpeechToText();
 
-    const canSend = value.trim().length > 0 && uploadingCount === 0 && !sse.isPosting;
+    const canSend =
+        value.trim().length > 0 && uploadingCount === 0 && !sse.isPosting;
 
     // ── uploadFiles ──────────────────────────────────────────────────────────
     // Shared validation + upload pipeline used by file input, drag-and-drop,
     // and webcam capture.
-    const uploadFiles = useCallback((files: File[]) => {
-        const valid: File[] = [];
-        for (const file of files) {
-            if (!file.type.startsWith('image/')) {
-                errorToast({ title: 'Invalid file', description: `${file.name} is not an image` }); continue;
+    const uploadFiles = useCallback(
+        (files: File[]) => {
+            const valid: File[] = [];
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) {
+                    errorToast({
+                        title: 'Invalid file',
+                        description: `${file.name} is not an image`,
+                    });
+                    continue;
+                }
+                if (file.size > MAX_FILE_SIZE_BYTES) {
+                    errorToast({
+                        title: 'File too large',
+                        description: `${file.name} must be under 5MB`,
+                    });
+                    continue;
+                }
+                valid.push(file);
             }
-            if (file.size > MAX_FILE_SIZE_BYTES) {
-                errorToast({ title: 'File too large', description: `${file.name} must be under 5MB` }); continue;
+            const currentLen = pendingAttachmentUrls.length;
+            const toUpload = valid.slice(0, MAX_ATTACHMENT_IMAGES - currentLen);
+            if (currentLen + valid.length > MAX_ATTACHMENT_IMAGES) {
+                errorToast({
+                    title: 'Limit Reached',
+                    description: `Max ${MAX_ATTACHMENT_IMAGES} images are allowed`,
+                });
             }
-            valid.push(file);
-        }
-        const currentLen = pendingAttachmentUrls.length;
-        const toUpload = valid.slice(0, MAX_ATTACHMENT_IMAGES - currentLen);
-        if (currentLen + valid.length > MAX_ATTACHMENT_IMAGES) {
-            errorToast({ title: 'Limit Reached', description: `Max ${MAX_ATTACHMENT_IMAGES} images are allowed` });
-        }
-        if (toUpload.length > 0) {
-            isDirtyRef.current = true;
-            setUploadingCount((c) => c + toUpload.length);
-            messagingService
-                .uploadAttachments(toUpload, currentAssetId ?? '')
-                .then(({ urls }) => { setPendingAttachmentUrls((prev) => [...prev, ...urls].slice(0, MAX_ATTACHMENT_IMAGES)); })
-                .catch((err) => { errorToast({ title: 'Upload failed', description: err instanceof Error ? err.message : 'Failed to upload images' }); })
-                .finally(() => setUploadingCount((c) => c - toUpload.length));
-        }
-    }, [pendingAttachmentUrls, currentAssetId]);
+            if (toUpload.length > 0) {
+                isDirtyRef.current = true;
+                setUploadingCount((c) => c + toUpload.length);
+                messagingService
+                    .uploadAttachments(toUpload, currentAssetId ?? '')
+                    .then(({ urls }) => {
+                        setPendingAttachmentUrls((prev) =>
+                            [...prev, ...urls].slice(0, MAX_ATTACHMENT_IMAGES),
+                        );
+                    })
+                    .catch((err) => {
+                        errorToast({
+                            title: 'Upload failed',
+                            description:
+                                err instanceof Error
+                                    ? err.message
+                                    : 'Failed to upload images',
+                        });
+                    })
+                    .finally(() =>
+                        setUploadingCount((c) => c - toUpload.length),
+                    );
+            }
+        },
+        [pendingAttachmentUrls, currentAssetId],
+    );
 
     // ── Debounced save ───────────────────────────────────────────────────────
     // Only runs when isDirty — guards against the restore effect triggering a
@@ -204,11 +283,24 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
             draftTimeoutRef.current = setTimeout(() => {
                 const isEmpty = !text.trim() && attachmentUrls.length === 0;
                 if (isEmpty) {
-                    if (currentThreadId) clearThreadDraft(currentThreadId, true);
-                    else if (currentAssetId) clearAssetDraft(currentAssetId, true);
+                    if (currentThreadId)
+                        clearThreadDraft(currentThreadId, true);
+                    else if (currentAssetId)
+                        clearAssetDraft(currentAssetId, true);
                 } else {
-                    if (currentThreadId) saveThreadDraft(currentThreadId, { text, assetId: currentAssetId ?? '', title: currentThread?.title ?? '', attachmentUrls });
-                    else if (currentAssetId) saveAssetDraft(currentAssetId, { text, title: currentAsset?.name ?? '', attachmentUrls });
+                    if (currentThreadId)
+                        saveThreadDraft(currentThreadId, {
+                            text,
+                            assetId: currentAssetId ?? '',
+                            title: currentThread?.title ?? '',
+                            attachmentUrls,
+                        });
+                    else if (currentAssetId)
+                        saveAssetDraft(currentAssetId, {
+                            text,
+                            title: currentAsset?.name ?? '',
+                            attachmentUrls,
+                        });
                 }
                 draftTimeoutRef.current = null;
             }, DRAFT_DEBOUNCE_MS);
@@ -220,18 +312,25 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
         const textarea = textareaRef.current;
         if (!textarea) return;
         textarea.style.height = 'auto';
-        const lineHeight = parseInt(getComputedStyle(textarea).lineHeight || '20', 10);
+        const lineHeight = parseInt(
+            getComputedStyle(textarea).lineHeight || '20',
+            10,
+        );
         const maxHeight = lineHeight * MAX_HEIGHT_LINES;
         const newHeight = Math.min(textarea.scrollHeight, maxHeight);
         textarea.style.height = `${newHeight}px`;
-        textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+        textarea.style.overflowY =
+            textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }
 
     function checkOverflow() {
         if (overflow) return;
-        if (!inputRef.current || !mirrorRef.current || !textareaRef.current) return;
-        mirrorRef.current.textContent = inputRef.current.value || " ";
-        setOverflow(mirrorRef.current.scrollWidth > inputRef.current.clientWidth);
+        if (!inputRef.current || !mirrorRef.current || !textareaRef.current)
+            return;
+        mirrorRef.current.textContent = inputRef.current.value || ' ';
+        setOverflow(
+            mirrorRef.current.scrollWidth > inputRef.current.clientWidth,
+        );
     }
 
     async function sendMessage() {
@@ -244,9 +343,24 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
         setValue('');
 
         if (pendingAttachmentUrls.length > 0) {
-            postMessageAsync(trimmedValue, assetId, tid, false, currentThread?.title ?? '', undefined, 'user', pendingAttachmentUrls);
+            postMessageAsync(
+                trimmedValue,
+                assetId,
+                tid,
+                false,
+                currentThread?.title ?? '',
+                undefined,
+                'user',
+                pendingAttachmentUrls,
+            );
         } else {
-            postMessageAsync(trimmedValue, assetId, tid, false, currentThread?.title ?? '');
+            postMessageAsync(
+                trimmedValue,
+                assetId,
+                tid,
+                false,
+                currentThread?.title ?? '',
+            );
         }
 
         isDirtyRef.current = false;
@@ -272,8 +386,18 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
         try {
             await messagingService.deleteAttachment(url);
         } catch (err) {
-            setPendingAttachmentUrls((prev) => { const l = [...prev]; l.splice(index, 0, url); return l; });
-            errorToast({ title: 'Failed to delete', description: err instanceof Error ? err.message : 'Failed to delete attachment' });
+            setPendingAttachmentUrls((prev) => {
+                const l = [...prev];
+                l.splice(index, 0, url);
+                return l;
+            });
+            errorToast({
+                title: 'Failed to delete',
+                description:
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to delete attachment',
+            });
         }
     }
 
@@ -282,35 +406,71 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
     // or Android native camera). Feeds the File into the normal upload pipeline.
     function handleWebcamFile(file: File) {
         if (pendingAttachmentUrls.length >= MAX_ATTACHMENT_IMAGES) {
-            errorToast({ title: 'Limit Reached', description: `Max ${MAX_ATTACHMENT_IMAGES} images are allowed` });
+            errorToast({
+                title: 'Limit Reached',
+                description: `Max ${MAX_ATTACHMENT_IMAGES} images are allowed`,
+            });
             return;
         }
         isDirtyRef.current = true;
         setUploadingCount((c) => c + 1);
         messagingService
             .uploadAttachments([file], currentAssetId ?? '')
-            .then(({ urls }) => { setPendingAttachmentUrls((prev) => [...prev, ...urls].slice(0, MAX_ATTACHMENT_IMAGES)); })
-            .catch((err) => { errorToast({ title: 'Upload failed', description: err instanceof Error ? err.message : 'Failed to upload image' }); })
+            .then(({ urls }) => {
+                setPendingAttachmentUrls((prev) =>
+                    [...prev, ...urls].slice(0, MAX_ATTACHMENT_IMAGES),
+                );
+            })
+            .catch((err) => {
+                errorToast({
+                    title: 'Upload failed',
+                    description:
+                        err instanceof Error
+                            ? err.message
+                            : 'Failed to upload image',
+                });
+            })
             .finally(() => setUploadingCount((c) => c - 1));
     }
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) {
-        if (e.key === 'Enter' && e.shiftKey && value != '') { e.preventDefault(); setOverflow(true); setValue(v => v + '\n'); }
-        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    function handleKeyDown(
+        e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+    ) {
+        if (e.key === 'Enter' && e.shiftKey && value != '') {
+            e.preventDefault();
+            setOverflow(true);
+            setValue((v) => v + '\n');
+        }
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     }
 
-    async function action(action: ThreadAction, threadTitle: string, threadId: string) {
+    async function action(
+        action: ThreadAction,
+        threadTitle: string,
+        threadId: string,
+    ) {
         let result = false;
         if (action === 'close') result = await closeThread(threadId);
         if (action === 'report') result = await reportThread(threadId);
         if (result) {
             removeProcessedThread(threadId);
-            successToast({ title: 'Success', description: `${threadTitle} has been ${action === 'close' ? 'closed' : 'reported'}.` });
+            successToast({
+                title: 'Success',
+                description: `${threadTitle} has been ${action === 'close' ? 'closed' : 'reported'}.`,
+            });
         }
     }
 
     function toggleMicrophone() {
-        if (isListening) { stopListening(); } else { resetTranscript(); startListening(); }
+        if (isListening) {
+            stopListening();
+        } else {
+            resetTranscript();
+            startListening();
+        }
     }
 
     // ── Drag and drop handlers ───────────────────────────────────────────────
@@ -321,7 +481,7 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
         if (pendingAttachmentUrls.length >= MAX_ATTACHMENT_IMAGES) return;
         // Only show drop target if there are actual image files being dragged
         const hasImages = Array.from(e.dataTransfer.items).some(
-            (item) => item.kind === 'file' && item.type.startsWith('image/')
+            (item) => item.kind === 'file' && item.type.startsWith('image/'),
         );
         if (hasImages) setIsDragOver(true);
     }
@@ -340,21 +500,36 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
         e.stopPropagation();
         setIsDragOver(false);
         if (block || isThreadProcessing(currentThreadId ?? '')) return;
-        const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'));
+        const files = Array.from(e.dataTransfer.files).filter((f) =>
+            f.type.startsWith('image/'),
+        );
         if (files.length > 0) uploadFiles(files);
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    useEffect(() => { valueRef.current = value; }, [value]);
-    useEffect(() => { attachmentUrlsRef.current = pendingAttachmentUrls; }, [pendingAttachmentUrls]);
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
+    useEffect(() => {
+        attachmentUrlsRef.current = pendingAttachmentUrls;
+    }, [pendingAttachmentUrls]);
 
     useEffect(() => {
         if (!currentThreadId && !currentAssetId) {
-            if (draftTimeoutRef.current) { clearTimeout(draftTimeoutRef.current); draftTimeoutRef.current = null; }
+            if (draftTimeoutRef.current) {
+                clearTimeout(draftTimeoutRef.current);
+                draftTimeoutRef.current = null;
+            }
             return;
         }
         saveDraftDebounced(value, pendingAttachmentUrls);
-    }, [value, pendingAttachmentUrls, saveDraftDebounced, currentThreadId, currentAssetId]);
+    }, [
+        value,
+        pendingAttachmentUrls,
+        saveDraftDebounced,
+        currentThreadId,
+        currentAssetId,
+    ]);
 
     useEffect(() => {
         if (transcript) {
@@ -365,7 +540,11 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
     }, [transcript, resetTranscript]);
 
     useEffect(() => {
-        if (error) errorToast({ title: 'Speech Recognition Error', description: error });
+        if (error)
+            errorToast({
+                title: 'Speech Recognition Error',
+                description: error,
+            });
     }, [error]);
 
     useEffect(() => {
@@ -384,29 +563,51 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
 
     useEffect(() => {
         return () => {
-            if (draftTimeoutRef.current) { clearTimeout(draftTimeoutRef.current); draftTimeoutRef.current = null; }
+            if (draftTimeoutRef.current) {
+                clearTimeout(draftTimeoutRef.current);
+                draftTimeoutRef.current = null;
+            }
             if (!isDirtyRef.current) return;
-            const hasContent = valueRef.current || attachmentUrlsRef.current.length > 0;
+            const hasContent =
+                valueRef.current || attachmentUrlsRef.current.length > 0;
             if (!hasContent) return;
             if (currentThreadId) {
-                saveThreadDraft(currentThreadId, { text: valueRef.current, assetId: currentAssetId ?? '', title: currentThread?.title ?? '', attachmentUrls: attachmentUrlsRef.current });
+                saveThreadDraft(currentThreadId, {
+                    text: valueRef.current,
+                    assetId: currentAssetId ?? '',
+                    title: currentThread?.title ?? '',
+                    attachmentUrls: attachmentUrlsRef.current,
+                });
             } else if (currentAssetId) {
-                saveAssetDraft(currentAssetId, { text: valueRef.current, title: currentAsset?.name ?? '', attachmentUrls: attachmentUrlsRef.current });
+                saveAssetDraft(currentAssetId, {
+                    text: valueRef.current,
+                    title: currentAsset?.name ?? '',
+                    attachmentUrls: attachmentUrlsRef.current,
+                });
             }
         };
     }, [currentThreadId, currentAssetId, currentThread, currentAsset]);
 
     useEffect(() => {
         if (!currentThreadId && !currentAssetId) {
-            setValue(''); setPendingAttachmentUrls([]); setOverflow(false); return;
+            setValue('');
+            setPendingAttachmentUrls([]);
+            setOverflow(false);
+            return;
         }
-        const draft = getThreadDraft(currentThreadId ?? '') ?? (pathname.includes('asset') ? getAssetDraft(currentAssetId ?? '') : null);
+        const draft =
+            getThreadDraft(currentThreadId ?? '') ??
+            (pathname.includes('asset')
+                ? getAssetDraft(currentAssetId ?? '')
+                : null);
         isDirtyRef.current = false;
         if (draft) {
             setValue(draft.text || '');
             setPendingAttachmentUrls(draft.attachmentUrls || []);
         } else {
-            setValue(''); setPendingAttachmentUrls([]); setOverflow(false);
+            setValue('');
+            setPendingAttachmentUrls([]);
+            setOverflow(false);
         }
     }, [currentThreadId, currentAssetId]);
 
@@ -421,7 +622,9 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
             onDrop={handleDrop}
             className={cn(
                 'overflow-hidden focus-within:border-primary hover:border-primary w-full py-3 px-1.5 transition-colors ease-in relative',
-                block || isThreadProcessing(currentThreadId ?? '') && "pointer-events-none opacity-60 select-none !cursor-crosshair",
+                block ||
+                    (isThreadProcessing(currentThreadId ?? '') &&
+                        'pointer-events-none opacity-60 select-none !cursor-crosshair'),
                 isBento ? 'bento' : 'rounded-md border border-muted bg-card',
                 isDragOver && 'border-primary ring-2 ring-primary/20',
             )}
@@ -429,8 +632,13 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
             {/* Drag-over overlay */}
             {isDragOver && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-[inherit] bg-primary/5 border-2 border-dashed border-primary pointer-events-none">
-                    <ImagePlus className="size-7 text-primary" strokeWidth={1.5} />
-                    <p className="text-sm font-medium text-primary">Drop image to attach</p>
+                    <ImagePlus
+                        className="size-7 text-primary"
+                        strokeWidth={1.5}
+                    />
+                    <p className="text-sm font-medium text-primary">
+                        Drop image to attach
+                    </p>
                 </div>
             )}
 
@@ -440,7 +648,12 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
                         {pendingAttachmentUrls.map((url, i) => (
                             <div key={`url-${i}`} className="relative group">
                                 <ImageViewer url={url as string}>
-                                    <img src={url} alt="" className="h-14 w-14 rounded object-cover border border-muted" onError={() => handleImageError(url)} />
+                                    <img
+                                        src={url}
+                                        alt=""
+                                        className="h-14 w-14 rounded object-cover border border-muted"
+                                        onError={() => handleImageError(url)}
+                                    />
                                 </ImageViewer>
                                 <button
                                     type="button"
@@ -453,94 +666,216 @@ export default function TextArea({ assetTitle, isBento = true }: { assetTitle?: 
                                 </button>
                             </div>
                         ))}
-                        {uploadingCount > 0 && Array.from({ length: uploadingCount }, (_, i) => (
-                            <div key={`uploading-${i}`} className="h-14 w-14 rounded border border-muted bg-muted flex items-center justify-center">
-                                <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
-                            </div>
-                        ))}
+                        {uploadingCount > 0 &&
+                            Array.from({ length: uploadingCount }, (_, i) => (
+                                <div
+                                    key={`uploading-${i}`}
+                                    className="h-14 w-14 rounded border border-muted bg-muted flex items-center justify-center"
+                                >
+                                    <Loader2Icon className="size-6 animate-spin text-muted-foreground" />
+                                </div>
+                            ))}
                     </div>
                 </ImageViewerProvider>
             )}
-            <div className={cn('flex flex-row items-center', overflow && 'flex-col')}>
-                <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={onFileInputChange} />
+            <div
+                className={cn(
+                    'flex flex-row items-center',
+                    overflow && 'flex-col',
+                )}
+            >
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={onFileInputChange}
+                />
                 {/* Camera input — capture="environment" used on Android only */}
-                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFileInputChange} />
-                {
-                    !overflow && currentThread && currentThread?.status === 'open' &&
-                    (isThreadProcessing(currentThread?.threadId ?? '')
-                        ? <Loader2Icon className="size-5 animate-spin" />
-                        : <ActionPopover action={action} threadId={currentThread?.threadId ?? ''} threadTitle={currentThread?.title ?? ''} align="start" hasAttachments={hasAttachments} startedFromWorkOrder={currentThread?.startedFromWorkOrder}>
-                            <TooltipIconButton tooltip="Action" variant="ghost" className="size-8 transition-opacity ease-in" disabled={sse.isPosting || block || isThreadProcessing(currentThreadId ?? '')}>
+                <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={onFileInputChange}
+                />
+                {!overflow &&
+                    currentThread &&
+                    currentThread?.status === 'open' &&
+                    (isThreadProcessing(currentThread?.threadId ?? '') ? (
+                        <Loader2Icon className="size-5 animate-spin" />
+                    ) : (
+                        <ActionPopover
+                            action={action}
+                            threadId={currentThread?.threadId ?? ''}
+                            threadTitle={currentThread?.title ?? ''}
+                            align="start"
+                            hasAttachments={hasAttachments}
+                            startedFromWorkOrder={
+                                currentThread?.startedFromWorkOrder
+                            }
+                        >
+                            <TooltipIconButton
+                                tooltip="Action"
+                                variant="ghost"
+                                className="size-8 transition-opacity ease-in"
+                                disabled={
+                                    sse.isPosting ||
+                                    block ||
+                                    isThreadProcessing(currentThreadId ?? '')
+                                }
+                            >
                                 <SquarePen />
                             </TooltipIconButton>
-                        </ActionPopover>)
-                }
+                        </ActionPopover>
+                    ))}
 
-                <div className={cn('w-full relative', overflow ? 'textarea-slide-up' : 'textarea-slide-down')}>
+                <div
+                    className={cn(
+                        'w-full relative',
+                        overflow ? 'textarea-slide-up' : 'textarea-slide-down',
+                    )}
+                >
                     <input
                         ref={inputRef}
-                        spellCheck autoCorrect="on" autoCapitalize="sentences"
-                        id="input-msg" type="text" value={value}
-                        onChange={(e) => { isDirtyRef.current = true; setValue(e.target.value); }}
+                        spellCheck
+                        autoCorrect="on"
+                        autoCapitalize="sentences"
+                        id="input-msg"
+                        type="text"
+                        value={value}
+                        onChange={(e) => {
+                            isDirtyRef.current = true;
+                            setValue(e.target.value);
+                        }}
                         onKeyDown={handleKeyDown}
-                        placeholder={assetTitle ? `Ask anything about "${assetTitle}"` : "Ask anything..."}
+                        placeholder={
+                            assetTitle
+                                ? `Ask anything about "${assetTitle}"`
+                                : 'Ask anything...'
+                        }
                         className={cn(
                             'w-full p-1.5 placeholder:text-muted-foreground resize-none border-none bg-transparent text-sm outline-none focus:ring-0 disabled:cursor-not-allowed',
-                            overflow && value != '' ? ' hidden' : 'block'
+                            overflow && value != '' ? ' hidden' : 'block',
                         )}
                     />
-                    <span ref={mirrorRef} className="absolute top-0 left-0 whitespace-pre wrap-anywhere invisible p-1.5 text-sm" />
+                    <span
+                        ref={mirrorRef}
+                        className="absolute top-0 left-0 whitespace-pre wrap-anywhere invisible p-1.5 text-sm"
+                    />
                     <textarea
-                        spellCheck autoCorrect="on" autoCapitalize="sentences"
-                        id="textarea-msg" ref={textareaRef} value={value} rows={1}
-                        onChange={(e) => { isDirtyRef.current = true; setValue(e.target.value); }}
+                        spellCheck
+                        autoCorrect="on"
+                        autoCapitalize="sentences"
+                        id="textarea-msg"
+                        ref={textareaRef}
+                        value={value}
+                        rows={1}
+                        onChange={(e) => {
+                            isDirtyRef.current = true;
+                            setValue(e.target.value);
+                        }}
                         onKeyDown={handleKeyDown}
-                        disabled={block || isThreadProcessing(currentThreadId ?? '')}
-                        placeholder={assetTitle ? `Ask anything about "${assetTitle}"` : "Ask anything..."}
+                        disabled={
+                            block || isThreadProcessing(currentThreadId ?? '')
+                        }
+                        placeholder={
+                            assetTitle
+                                ? `Ask anything about "${assetTitle}"`
+                                : 'Ask anything...'
+                        }
                         className={cn(
                             'w-full p-1.5 placeholder:text-muted-foreground resize-none border-none bg-transparent text-sm outline-none focus:ring-0 disabled:cursor-not-allowed',
-                            overflow && value != '' ? 'block' : 'hidden'
+                            overflow && value != '' ? 'block' : 'hidden',
                         )}
                     />
                 </div>
 
-                <div className={cn('flex flex-row items-center justify-end gap-1', overflow ? 'w-full' : '')}>
-                    {
-                        overflow && currentThread && currentThread?.status === 'open' && (
-                            isThreadProcessing(currentThread?.threadId ?? '')
-                                ? <Loader2Icon className="size-5 animate-spin" />
-                                : <ActionPopover action={action} threadId={currentThread?.threadId ?? ''} threadTitle={currentThread?.title ?? ''} align="start" hasAttachments={hasAttachments} startedFromWorkOrder={currentThread?.startedFromWorkOrder}>
-                                    <TooltipIconButton tooltip="Action" variant="ghost" className="size-8 transition-opacity ease-in -mr-2" disabled={!canSend || block || isThreadProcessing(currentThreadId ?? '')}>
-                                        <SquarePen />
-                                    </TooltipIconButton>
-                                </ActionPopover>)
-                    }
+                <div
+                    className={cn(
+                        'flex flex-row items-center justify-end gap-1',
+                        overflow ? 'w-full' : '',
+                    )}
+                >
+                    {overflow &&
+                        currentThread &&
+                        currentThread?.status === 'open' &&
+                        (isThreadProcessing(currentThread?.threadId ?? '') ? (
+                            <Loader2Icon className="size-5 animate-spin" />
+                        ) : (
+                            <ActionPopover
+                                action={action}
+                                threadId={currentThread?.threadId ?? ''}
+                                threadTitle={currentThread?.title ?? ''}
+                                align="start"
+                                hasAttachments={hasAttachments}
+                                startedFromWorkOrder={
+                                    currentThread?.startedFromWorkOrder
+                                }
+                            >
+                                <TooltipIconButton
+                                    tooltip="Action"
+                                    variant="ghost"
+                                    className="size-8 transition-opacity ease-in -mr-2"
+                                    disabled={
+                                        !canSend ||
+                                        block ||
+                                        isThreadProcessing(
+                                            currentThreadId ?? '',
+                                        )
+                                    }
+                                >
+                                    <SquarePen />
+                                </TooltipIconButton>
+                            </ActionPopover>
+                        ))}
 
                     {isSupported && (
                         <TooltipIconButton
-                            tooltip={isListening ? "Recording... Press to stop" : "Press to record"}
-                            variant={isListening ? "destructive" : "ghost"}
-                            className={cn("size-8 transition-all ease-in", isListening && "animate-pulse")}
+                            tooltip={
+                                isListening
+                                    ? 'Recording... Press to stop'
+                                    : 'Press to record'
+                            }
+                            variant={isListening ? 'destructive' : 'ghost'}
+                            className={cn(
+                                'size-8 transition-all ease-in',
+                                isListening && 'animate-pulse',
+                            )}
                             onClick={toggleMicrophone}
                         >
                             <MicIcon />
-                            {isListening && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-destructive animate-ping" />}
+                            {isListening && (
+                                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-destructive animate-ping" />
+                            )}
                         </TooltipIconButton>
                     )}
 
-                    {currentThread && currentThread.status !== 'open'
-                        ? null
-                        : <AttachPopover
-                            disabled={block || isThreadProcessing(currentThreadId ?? '') || pendingAttachmentUrls.length >= MAX_ATTACHMENT_IMAGES}
+                    {currentThread && currentThread.status !== 'open' ? null : (
+                        <AttachPopover
+                            disabled={
+                                block ||
+                                isThreadProcessing(currentThreadId ?? '') ||
+                                pendingAttachmentUrls.length >=
+                                    MAX_ATTACHMENT_IMAGES
+                            }
                             onGallery={() => fileInputRef.current?.click()}
                             onCamera={handleCameraClick}
                         />
-                    }
+                    )}
 
                     <TooltipIconButton
-                        tooltip="Send" variant="default" className="size-8 transition-opacity ease-in"
+                        tooltip="Send"
+                        variant="default"
+                        className="size-8 transition-opacity ease-in"
                         onClick={sendMessage}
-                        disabled={!canSend || block || isThreadProcessing(currentThreadId ?? '')}
+                        disabled={
+                            !canSend ||
+                            block ||
+                            isThreadProcessing(currentThreadId ?? '')
+                        }
                     >
                         <SendHorizontalIcon />
                     </TooltipIconButton>

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { createContext } from "react";
+import { createContext } from 'react';
 
 export interface CardState {
     id: string;
@@ -14,7 +14,5 @@ interface DraggableCardContextType {
     toggleMinimize: (id: string) => void;
 }
 
-export const DraggableCardContext = createContext<DraggableCardContextType | null>(null);
-
-
-
+export const DraggableCardContext =
+    createContext<DraggableCardContextType | null>(null);

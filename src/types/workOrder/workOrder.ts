@@ -1,33 +1,35 @@
-export type WorkOrderStatus = 'open'
+export type WorkOrderStatus =
+    | 'open'
     | 'thread_opened'
     | 'cancelled'
     | 'completed';
 
-export type WorkOrderSourceType = 'maintenance_task'
+export type WorkOrderSourceType =
+    | 'maintenance_task'
     | 'manual'
     | 'chat'
     | 'integration';
 
-export type WorkLogOutcome = 'fixed'
-    | 'not_fixed'
-    | 'partially_fixed';
+export type WorkLogOutcome = 'fixed' | 'not_fixed' | 'partially_fixed';
 
 export interface WorkLogDetail {
     troubleshootingSteps?: string | null;
-    parts?: {
-        manufacturer?: string | null;
-        model?: string | null;
-        partNumber?: string | null;
-        quantity?: number | null;
-        comments?: string | null;
-    }[] | null;
+    parts?:
+        | {
+              manufacturer?: string | null;
+              model?: string | null;
+              partNumber?: string | null;
+              quantity?: number | null;
+              comments?: string | null;
+          }[]
+        | null;
     outcome?: WorkLogOutcome | null;
     comments?: string | null;
     performedBy?: string | null;
     performedByFirstName?: string | null;
     performedByLastName?: string | null;
     performedAtUtc?: string | null;
-};
+}
 
 export type WorkLogDetailList = WorkLogDetail[];
 

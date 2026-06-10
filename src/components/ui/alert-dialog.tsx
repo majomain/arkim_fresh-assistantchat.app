@@ -131,11 +131,7 @@ function AlertDialogDescription({
 function AlertDialogAction({
     ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
-    return (
-        <AlertDialogPrimitive.Action
-            {...props}
-        />
-    );
+    return <AlertDialogPrimitive.Action {...props} />;
 }
 
 function AlertDialogCancel({

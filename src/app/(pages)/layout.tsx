@@ -1,23 +1,30 @@
-'use client'
+'use client';
 
-import PageLoader from "@/components/core/PageLoader";
-import Header from "@/components/layout/Header";
-import SideBar from "@/components/layout/SideBar";
-import { useAuth } from "@/hooks/use-auth";
-import { ProgressProvider } from '@bprogress/next/app';
+import { useCompanyBroadcast } from '@/hooks/broadcasts/use-company-broadcast';
+import { useAuth } from '@/hooks/use-auth';
+import { DraftProvider } from '@/providers/DraftProvider';
+import { DraggableCardProvider } from '@/providers/DraggableCardProvider';
 import { BProgress } from '@bprogress/core';
-import { usePathname } from "next/navigation";
-import { useEffect, useTransition } from "react";
-import ResponseNotification from "@/components/core/chat/ResponseAlert";
-import { requestNotificationPermission } from "@/utils/web-notification";
-import { DraggableCardProvider } from "@/providers/DraggableCardProvider";
-import OnboardFloatingCard from "@/components/core/floating-onboard/OnboardFloatingCard";
-import { cn } from "@/lib/utils";
-import { useCompanyBroadcast } from "@/hooks/broadcasts/use-company-broadcast";
-import { DraftProvider } from "@/providers/DraftProvider";
-import MobileTabBar from "@/components/layout/MobileTabBar";
+import { ProgressProvider } from '@bprogress/next/app';
+import { usePathname } from 'next/navigation';
+import { useEffect, useTransition } from 'react';
 
-export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
+import PageLoader from '@/components/core/PageLoader';
+import ResponseNotification from '@/components/core/chat/ResponseAlert';
+import OnboardFloatingCard from '@/components/core/floating-onboard/OnboardFloatingCard';
+import Header from '@/components/layout/Header';
+import MobileTabBar from '@/components/layout/MobileTabBar';
+import SideBar from '@/components/layout/SideBar';
+
+import { requestNotificationPermission } from '@/utils/web-notification';
+
+import { cn } from '@/lib/utils';
+
+export default function AuthenticatedLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     // user data and loading status for user api
     const { user, loading, refreshSession } = useAuth();
     // current path name
@@ -34,10 +41,10 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
 
     // show progress loader whenever page changes
     useEffect(() => {
-        BProgress.start()
+        BProgress.start();
         startTransition(() => {
-            BProgress.done()
-        })
+            BProgress.done();
+        });
     }, [pathname]);
 
     // check for push notification permission
@@ -45,49 +52,48 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         requestNotificationPermission();
     }, []);
 
-    return loading
-        ?
+    return loading ? (
         <PageLoader />
-        :
+    ) : (
         <ProgressProvider
             height="4px"
             color="var(--primary)"
             options={{ showSpinner: false }}
-
         >
-            {
-                user
-                    ?
-                    <DraftProvider>
-                        <DraggableCardProvider>
-                            {
-                                pathname.includes('help-and-faq') || pathname.includes('terms-and-policies')
-                                    ?
-                                    children
-                                    :
-                                    <>
-                                        <SideBar />
-                                        <div className="flex flex-col w-full">
-                                            <Header />
-                                            <div className={cn(
-                                                !pathname.includes('/thread') && 'px-2.5',
-                                                // clear the mobile bottom tab bar (hidden on thread)
-                                                !pathname.includes('/thread') && 'pb-16 md:pb-0',
-                                            )}>
-                                                <ResponseNotification />
+            {user ? (
+                <DraftProvider>
+                    <DraggableCardProvider>
+                        {pathname.includes('help-and-faq') ||
+                        pathname.includes('terms-and-policies') ? (
+                            children
+                        ) : (
+                            <>
+                                <SideBar />
+                                <div className="flex flex-col w-full">
+                                    <Header />
+                                    <div
+                                        className={cn(
+                                            !pathname.includes('/thread') &&
+                                                'px-2.5',
+                                            // clear the mobile bottom tab bar (hidden on thread)
+                                            !pathname.includes('/thread') &&
+                                                'pb-16 md:pb-0',
+                                        )}
+                                    >
+                                        <ResponseNotification />
 
-                                                <OnboardFloatingCard />
-                                                {children}
-                                            </div>
-
-                                        </div>
-                                        <MobileTabBar />
-                                    </>
-                            }
-                        </DraggableCardProvider>
-                    </DraftProvider>
-                    :
-                    children
-            }
-        </ProgressProvider>;
+                                        <OnboardFloatingCard />
+                                        {children}
+                                    </div>
+                                </div>
+                                <MobileTabBar />
+                            </>
+                        )}
+                    </DraggableCardProvider>
+                </DraftProvider>
+            ) : (
+                children
+            )}
+        </ProgressProvider>
+    );
 }

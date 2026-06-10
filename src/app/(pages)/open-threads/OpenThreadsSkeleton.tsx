@@ -1,12 +1,11 @@
-'use client'
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+'use client';
 
-export default function OpenThreadsSkeleton({count}:{count?:number}) {
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+export default function OpenThreadsSkeleton({ count }: { count?: number }) {
     return Array.from({ length: count ?? 7 }).map((_, index) => (
-        <Card
-            key={index}
-        >
+        <Card key={index}>
             <CardContent className="flex flex-col gap-2 animate-pulse">
                 <Skeleton className="w-full h-8" />
 

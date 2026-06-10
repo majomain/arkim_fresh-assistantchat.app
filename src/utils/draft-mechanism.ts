@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import messagingService from "@/services/api/messagingService";
+import messagingService from '@/services/api/messagingService';
 
 export const DRAFTS_KEY = 'medeschatdrafts';
 
@@ -23,11 +23,13 @@ export function getAllDrafts(): Record<string, DraftEntry> {
 }
 
 /** Returns only the drafts that belong to the given locationId. */
-export function getDraftsByLocation(locationId: string): Record<string, DraftEntry> {
+export function getDraftsByLocation(
+    locationId: string,
+): Record<string, DraftEntry> {
     const all = getAllDrafts();
     const prefix = `location:${locationId}`;
     return Object.fromEntries(
-        Object.entries(all).filter(([key]) => key.startsWith(prefix))
+        Object.entries(all).filter(([key]) => key.startsWith(prefix)),
     );
 }
 
@@ -35,16 +37,17 @@ export function getDraftsByLocation(locationId: string): Record<string, DraftEnt
 async function deleteAttachmentsForEntry(entry: DraftEntry): Promise<void> {
     if (!entry.attachmentUrls?.length) return;
     await Promise.allSettled(
-        entry.attachmentUrls.map((url) => messagingService.deleteAttachment(url))
+        entry.attachmentUrls.map((url) =>
+            messagingService.deleteAttachment(url),
+        ),
     );
 }
-
 
 export async function clearAllDraft() {
     if (typeof window === 'undefined') return;
     const all = getAllDrafts();
     await Promise.allSettled(
-        Object.values(all).map((entry) => deleteAttachmentsForEntry(entry))
+        Object.values(all).map((entry) => deleteAttachmentsForEntry(entry)),
     );
     localStorage.removeItem(DRAFTS_KEY);
 }
@@ -58,5 +61,7 @@ export async function clearDraftByThread(locationId: string, threadId: string) {
         if (entry) await deleteAttachmentsForEntry(entry);
         delete drafts[key];
         localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
 }

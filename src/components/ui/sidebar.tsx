@@ -6,6 +6,8 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
+import { cn } from '@/lib/utils';
+
 import { Button } from './button';
 import { Input } from './input';
 import { Separator } from './separator';
@@ -24,8 +26,6 @@ import {
     TooltipTrigger,
 } from './tooltip';
 
-import { cn } from '@/lib/utils';
-
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = '16rem';
@@ -43,7 +43,6 @@ type SidebarContextProps = {
     toggleSidebar: () => void;
     mobileScrollTopRef: React.MutableRefObject<number>;
     scrollRef: React.RefObject<HTMLDivElement | null>;
-
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
@@ -131,7 +130,7 @@ function SidebarProvider({
             setOpenMobile,
             toggleSidebar,
             mobileScrollTopRef,
-            scrollRef
+            scrollRef,
         }),
         [
             state,
@@ -391,7 +390,8 @@ function SidebarSeparator({
 }
 
 function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
-    const { isMobile, openMobile, mobileScrollTopRef, scrollRef } = useSidebar();
+    const { isMobile, openMobile, mobileScrollTopRef, scrollRef } =
+        useSidebar();
 
     React.useEffect(() => {
         if (isMobile && openMobile && scrollRef.current) {
@@ -406,8 +406,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
             data-sidebar="content"
             onScroll={() => {
                 if (isMobile && scrollRef.current) {
-                    mobileScrollTopRef.current =
-                        scrollRef.current.scrollTop;
+                    mobileScrollTopRef.current = scrollRef.current.scrollTop;
                 }
             }}
             className={cn(
@@ -518,8 +517,7 @@ const sidebarMenuButtonVariants = cva(
     {
         variants: {
             variant: {
-                default:
-                    'hover:bg-sidebar-accent',
+                default: 'hover:bg-sidebar-accent',
                 outline:
                     'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
             },
@@ -614,7 +612,7 @@ function SidebarMenuAction({
                 'peer-data-[size=lg]/menu-button:top-2.5',
                 'group-data-[collapsible=icon]:hidden',
                 showOnHover &&
-                'peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
+                    'peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
                 className,
             )}
             {...props}

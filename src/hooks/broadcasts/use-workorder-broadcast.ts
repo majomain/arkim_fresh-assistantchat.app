@@ -1,16 +1,27 @@
 'use client';
 
-import { WorkOrderDetailList, WorkOrderStatus } from "@/types/workOrder/workOrder";
-import { useBroadcast } from "../use-broadcast";
-import { useLocation } from "../use-location";
-import { useAsset } from "../use-asset";
-import { useAuth } from "../use-auth";
+import {
+    WorkOrderDetailList,
+    WorkOrderStatus,
+} from '@/types/workOrder/workOrder';
+
+import { useAsset } from '../use-asset';
+import { useAuth } from '../use-auth';
+import { useBroadcast } from '../use-broadcast';
+import { useLocation } from '../use-location';
 
 export type WorkOrderEvent =
-    | { type: 'WORK_ORDER_CLAIMED'; workOrderId: string; siteId: string; status: WorkOrderStatus; }
-    | { type: 'WORK_ORDER_LIST_REFRESH'; siteId: string; assetId?: string; };
+    | {
+          type: 'WORK_ORDER_CLAIMED';
+          workOrderId: string;
+          siteId: string;
+          status: WorkOrderStatus;
+      }
+    | { type: 'WORK_ORDER_LIST_REFRESH'; siteId: string; assetId?: string };
 
-export function useWorkOrderBroadcast(onMessage?: (event: WorkOrderEvent) => void) {
+export function useWorkOrderBroadcast(
+    onMessage?: (event: WorkOrderEvent) => void,
+) {
     const { user } = useAuth();
     const { selectedLocation } = useLocation();
     const { currentAssetId } = useAsset();
@@ -18,33 +29,50 @@ export function useWorkOrderBroadcast(onMessage?: (event: WorkOrderEvent) => voi
     const { emit } = useBroadcast<WorkOrderEvent>('work-orders', onMessage);
 
     // claim work order and emit that event for that work order within the given site
-    const claimWorkOrder = (workOrderId: string, siteId: string, status: WorkOrderStatus) =>
-        emit({ type: 'WORK_ORDER_CLAIMED', workOrderId, siteId, status });
+    const claimWorkOrder = (
+        workOrderId: string,
+        siteId: string,
+        status: WorkOrderStatus,
+    ) => emit({ type: 'WORK_ORDER_CLAIMED', workOrderId, siteId, status });
 
     // request other tabs to refresh their work order list for the given site and asset (if provided)
     const requestRefresh = (siteId: string, assetId?: string) =>
         emit({ type: 'WORK_ORDER_LIST_REFRESH', siteId, assetId });
 
     const updateWorkOrder = (
-        setWorkOrders: React.Dispatch<React.SetStateAction<WorkOrderDetailList>>,
+        setWorkOrders: React.Dispatch<
+            React.SetStateAction<WorkOrderDetailList>
+        >,
         workOrderId: string,
         siteId: string,
-        status: WorkOrderStatus
+        status: WorkOrderStatus,
     ) => {
         if (selectedLocation?.id === siteId && workOrderId) {
-            setWorkOrders(prev => prev.map(wo => wo.id === workOrderId ? { ...wo, threadId: wo.threadId ?? crypto.randomUUID(), threadOpenedBy: wo.threadOpenedBy ?? user?.email, status } : wo));
+            setWorkOrders((prev) =>
+                prev.map((wo) =>
+                    wo.id === workOrderId
+                        ? {
+                              ...wo,
+                              threadId: wo.threadId ?? crypto.randomUUID(),
+                              threadOpenedBy: wo.threadOpenedBy ?? user?.email,
+                              status,
+                          }
+                        : wo,
+                ),
+            );
         }
-
     };
 
     // remove the work order from the list when it's claimed within the same site
     const removeWorkOrder = (
-        setWorkOrders: React.Dispatch<React.SetStateAction<WorkOrderDetailList>>,
+        setWorkOrders: React.Dispatch<
+            React.SetStateAction<WorkOrderDetailList>
+        >,
         workOrderId: string,
-        siteId: string
+        siteId: string,
     ) => {
         if (selectedLocation?.id === siteId && workOrderId) {
-            setWorkOrders(prev => prev.filter(wo => wo.id !== workOrderId));
+            setWorkOrders((prev) => prev.filter((wo) => wo.id !== workOrderId));
         }
     };
 
@@ -52,14 +80,14 @@ export function useWorkOrderBroadcast(onMessage?: (event: WorkOrderEvent) => voi
     const refreshWorkOrderList = (
         getWorkOrders: () => Promise<void>,
         siteId: string,
-        assetId?: string
+        assetId?: string,
     ) => {
         // common check for site location
         const hitFunction = () => {
             if (selectedLocation?.id === siteId) {
                 getWorkOrders();
             }
-        }
+        };
 
         if (assetId) {
             if (currentAssetId && assetId === currentAssetId) {
@@ -68,7 +96,13 @@ export function useWorkOrderBroadcast(onMessage?: (event: WorkOrderEvent) => voi
         } else {
             hitFunction();
         }
-    }
+    };
 
-    return { claimWorkOrder, requestRefresh, removeWorkOrder, updateWorkOrder, refreshWorkOrderList };
+    return {
+        claimWorkOrder,
+        requestRefresh,
+        removeWorkOrder,
+        updateWorkOrder,
+        refreshWorkOrderList,
+    };
 }

@@ -1,5 +1,10 @@
-'use client'
+'use client';
 
+import messagingService from '@/services/api/messagingService';
+import { Star } from 'lucide-react';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -7,12 +12,9 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import messagingService from "@/services/api/messagingService";
-import { Star } from "lucide-react";
-import { useState } from "react";
+} from '@/components/ui/dialog';
+
+import { cn } from '@/lib/utils';
 
 interface ThreadRatingProps {
     threadId: string;
@@ -20,21 +22,23 @@ interface ThreadRatingProps {
     onClose: () => void;
 }
 
-export default function ThreadRating({ threadId, open, onClose }: ThreadRatingProps) {
+export default function ThreadRating({
+    threadId,
+    open,
+    onClose,
+}: ThreadRatingProps) {
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
     const [hoveredRating, setHoveredRating] = useState<number | null>(null);
-    const [feedback, setFeedback] = useState("");
+    const [feedback, setFeedback] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     function handleSubmit() {
         if (selectedRating === null) return;
 
         // Fire and forget — close immediately
-        messagingService.rateThread(
-            threadId,
-            selectedRating,
-            feedback.trim() || undefined,
-        ).catch(() => {});
+        messagingService
+            .rateThread(threadId, selectedRating, feedback.trim() || undefined)
+            .catch(() => {});
         onClose();
     }
 
@@ -45,12 +49,18 @@ export default function ThreadRating({ threadId, open, onClose }: ThreadRatingPr
     const displayRating = hoveredRating ?? selectedRating;
 
     return (
-        <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleSkip(); }}>
+        <Dialog
+            open={open}
+            onOpenChange={(isOpen) => {
+                if (!isOpen) handleSkip();
+            }}
+        >
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Rate this conversation</DialogTitle>
                     <DialogDescription>
-                        How would you rate your overall experience with this conversation?
+                        How would you rate your overall experience with this
+                        conversation?
                     </DialogDescription>
                 </DialogHeader>
 
@@ -66,10 +76,11 @@ export default function ThreadRating({ threadId, open, onClose }: ThreadRatingPr
                         >
                             <Star
                                 className={cn(
-                                    "w-8 h-8 transition-colors",
-                                    displayRating !== null && star <= displayRating
-                                        ? "text-yellow-500 fill-yellow-500"
-                                        : "text-muted-foreground"
+                                    'w-8 h-8 transition-colors',
+                                    displayRating !== null &&
+                                        star <= displayRating
+                                        ? 'text-yellow-500 fill-yellow-500'
+                                        : 'text-muted-foreground',
                                 )}
                             />
                         </button>
@@ -77,11 +88,11 @@ export default function ThreadRating({ threadId, open, onClose }: ThreadRatingPr
                 </div>
 
                 <p className="text-center text-sm text-muted-foreground h-5">
-                    {displayRating === 1 && "Poor"}
-                    {displayRating === 2 && "Fair"}
-                    {displayRating === 3 && "Good"}
-                    {displayRating === 4 && "Very good"}
-                    {displayRating === 5 && "Excellent"}
+                    {displayRating === 1 && 'Poor'}
+                    {displayRating === 2 && 'Fair'}
+                    {displayRating === 3 && 'Good'}
+                    {displayRating === 4 && 'Very good'}
+                    {displayRating === 5 && 'Excellent'}
                 </p>
 
                 <textarea
@@ -93,14 +104,18 @@ export default function ThreadRating({ threadId, open, onClose }: ThreadRatingPr
                 />
 
                 <DialogFooter className="flex gap-2 sm:justify-between">
-                    <Button variant="ghost" onClick={handleSkip} disabled={isSubmitting}>
+                    <Button
+                        variant="ghost"
+                        onClick={handleSkip}
+                        disabled={isSubmitting}
+                    >
                         Skip
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={selectedRating === null || isSubmitting}
                     >
-                        {isSubmitting ? "Submitting..." : "Submit"}
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

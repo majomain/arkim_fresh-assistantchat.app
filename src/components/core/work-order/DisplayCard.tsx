@@ -1,5 +1,14 @@
 'use client';
 
+import { useWorkOrderBroadcast } from '@/hooks/broadcasts/use-workorder-broadcast';
+import { useAsset } from '@/hooks/use-asset';
+import { useAuth } from '@/hooks/use-auth';
+import { useChat } from '@/hooks/use-chat';
+import { useLocation } from '@/hooks/use-location';
+import { WorkOrderDetail, WorkOrderStatus } from '@/types/workOrder/workOrder';
+import { AlertTriangle, ArrowRight, Box, Clock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -9,15 +18,9 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { useWorkOrderBroadcast } from '@/hooks/broadcasts/use-workorder-broadcast';
-import { useAuth } from '@/hooks/use-auth';
-import { useAsset } from '@/hooks/use-asset';
-import { useChat } from '@/hooks/use-chat';
-import { useLocation } from '@/hooks/use-location';
+
 import { cn } from '@/lib/utils';
-import { WorkOrderDetail, WorkOrderStatus } from '@/types/workOrder/workOrder';
-import { AlertTriangle, ArrowRight, Box, Clock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+
 import AttachmentsDialog from './AttachmentsDialog';
 import WorkLogDialog from './WorkLogDialog';
 
@@ -27,7 +30,9 @@ function getDayDiff(dueDateStr: string): number | null {
     if (!dueDateStr) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const raw = dueDateStr.includes('T') ? dueDateStr : `${dueDateStr}T00:00:00`;
+    const raw = dueDateStr.includes('T')
+        ? dueDateStr
+        : `${dueDateStr}T00:00:00`;
     const due = new Date(raw);
     if (isNaN(due.getTime())) return null;
     return Math.round((due.getTime() - today.getTime()) / 86_400_000);
@@ -40,10 +45,15 @@ function formatDueLabel(diff: number | null, dueDateStr: string): string {
     if (diff === 0) return 'Due today';
     if (diff === 1) return 'Due tomorrow';
     if (diff < 7) return `Due in ${diff} days`;
-    const raw = dueDateStr.includes('T') ? dueDateStr : `${dueDateStr}T00:00:00`;
+    const raw = dueDateStr.includes('T')
+        ? dueDateStr
+        : `${dueDateStr}T00:00:00`;
     return (
         'Due ' +
-        new Date(raw).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        new Date(raw).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+        })
     );
 }
 
@@ -57,15 +67,24 @@ function resolveStatus(status: WorkOrderStatus, diff: number | null) {
 function statusColor(status: WorkOrderStatus, overdue: boolean): string {
     if (overdue) return 'var(--st-overdue)';
     switch (status) {
-        case 'open':          return 'var(--st-open)';
-        case 'thread_opened': return 'var(--st-progress)';
-        case 'completed':     return 'var(--st-done)';
-        case 'cancelled':     return 'var(--st-cancel)';
-        default:              return 'var(--muted-foreground)';
+        case 'open':
+            return 'var(--st-open)';
+        case 'thread_opened':
+            return 'var(--st-progress)';
+        case 'completed':
+            return 'var(--st-done)';
+        case 'cancelled':
+            return 'var(--st-cancel)';
+        default:
+            return 'var(--muted-foreground)';
     }
 }
 
-function statusLabel(status: WorkOrderStatus, overdue: boolean, getLabel?: (s: WorkOrderStatus) => string): string {
+function statusLabel(
+    status: WorkOrderStatus,
+    overdue: boolean,
+    getLabel?: (s: WorkOrderStatus) => string,
+): string {
     if (overdue) return 'Overdue';
     return getLabel?.(status) ?? status;
 }
@@ -98,8 +117,8 @@ export default function DisplayCard({
         overdue || (diff !== null && diff < 0)
             ? 'var(--st-overdue)'
             : diff === 0
-            ? 'var(--st-open)'
-            : 'var(--muted-foreground)';
+              ? 'var(--st-open)'
+              : 'var(--muted-foreground)';
 
     const isOtherTech =
         workOrder.status === 'thread_opened' &&
@@ -116,12 +135,24 @@ export default function DisplayCard({
     function handleOpen() {
         if (!isClickable) return;
         if (workOrder.status === 'open') {
-            claimWorkOrder(workOrder.id, selectedLocation?.id ?? '', 'thread_opened');
-            postMessageAsync('', workOrder.assetId, '', true, '', {
-                workOrderId: workOrder.id,
-                dueDate: workOrder.dueDate,
-                title: workOrder.title,
-            }, 'assistant');
+            claimWorkOrder(
+                workOrder.id,
+                selectedLocation?.id ?? '',
+                'thread_opened',
+            );
+            postMessageAsync(
+                '',
+                workOrder.assetId,
+                '',
+                true,
+                '',
+                {
+                    workOrderId: workOrder.id,
+                    dueDate: workOrder.dueDate,
+                    title: workOrder.title,
+                },
+                'assistant',
+            );
         } else {
             router.push(`/thread?id=${workOrder.threadId}`);
         }
@@ -130,22 +161,22 @@ export default function DisplayCard({
     return (
         <Card
             className={cn(
-                'overflow-hidden transition-shadow duration-150 group',
-                isClickable && 'cursor-pointer hover:shadow-none',
+                'overflow-hidden group',
+                isClickable && 'card-hover-subtle cursor-pointer',
+                isClickable && workOrder.status === 'open' && 'card-attention',
                 isOtherTech && 'opacity-60',
-                workOrder.status === 'completed' && 'cursor-default',
+                !isClickable && 'cursor-default',
             )}
             style={{
-                borderLeft: `3px solid ${dotColor}`,
+                borderLeft: `6px solid ${dotColor}`,
                 borderTop: 'none',
                 borderRight: 'none',
                 borderBottom: 'none',
             }}
-            onClick={handleOpen}
+            onClick={isClickable ? handleOpen : undefined}
         >
             <CardContent className="flex flex-col gap-0 p-0">
                 <div style={{ padding: '14px 16px 15px' }}>
-
                     {/* Row 1: Status pill + Due tag */}
                     <div className="flex items-center justify-between">
                         {/* Status pill */}
@@ -182,10 +213,17 @@ export default function DisplayCard({
                                 flexShrink: 0,
                             }}
                         >
-                            {overdue || (diff !== null && diff < 0)
-                                ? <AlertTriangle size={13} style={{ color: dueColor, flexShrink: 0 }} />
-                                : <Clock size={13} style={{ color: dueColor, flexShrink: 0 }} />
-                            }
+                            {overdue || (diff !== null && diff < 0) ? (
+                                <AlertTriangle
+                                    size={13}
+                                    style={{ color: dueColor, flexShrink: 0 }}
+                                />
+                            ) : (
+                                <Clock
+                                    size={13}
+                                    style={{ color: dueColor, flexShrink: 0 }}
+                                />
+                            )}
                             {dueLabel}
                         </span>
                     </div>
@@ -221,8 +259,12 @@ export default function DisplayCard({
                                 size={13}
                                 className="text-muted-foreground/50 shrink-0"
                             />
-                            <span className="text-foreground shrink-0">{asset.name}</span>
-                            <span className="text-muted-foreground/40 shrink-0">·</span>
+                            <span className="text-foreground shrink-0">
+                                {asset.name}
+                            </span>
+                            <span className="text-muted-foreground/40 shrink-0">
+                                ·
+                            </span>
                             <span className="text-muted-foreground truncate">
                                 {asset.manufacturer} {asset.model}
                             </span>
@@ -249,12 +291,12 @@ export default function DisplayCard({
                             <DialogTrigger asChild>
                                 <button
                                     className="mt-1 text-xs font-medium text-link hover:underline text-left"
-                                    onClick={e => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     Show full description
                                 </button>
                             </DialogTrigger>
-                            <DialogContent onClick={e => e.stopPropagation()}>
+                            <DialogContent onClick={(e) => e.stopPropagation()}>
                                 <DialogTitle>Description</DialogTitle>
                                 <DialogDescription />
                                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">
@@ -270,15 +312,16 @@ export default function DisplayCard({
                     workOrder.status === 'completed') && (
                     <div
                         className="flex gap-3 px-4 pb-3"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {workOrder.attachments && workOrder.attachments.length > 0 && (
-                            <AttachmentsDialog workOrder={workOrder}>
-                                <span className="text-xs text-link font-medium cursor-pointer hover:underline">
-                                    View attachments
-                                </span>
-                            </AttachmentsDialog>
-                        )}
+                        {workOrder.attachments &&
+                            workOrder.attachments.length > 0 && (
+                                <AttachmentsDialog workOrder={workOrder}>
+                                    <span className="text-xs text-link font-medium cursor-pointer hover:underline">
+                                        View attachments
+                                    </span>
+                                </AttachmentsDialog>
+                            )}
                         {workOrder.status === 'completed' && (
                             <WorkLogDialog workOrder={workOrder}>
                                 <span className="text-xs text-link font-medium cursor-pointer hover:underline">
@@ -291,18 +334,20 @@ export default function DisplayCard({
 
                 {/* Open-thread CTA — visible for in-progress threads by this user */}
                 {isClickable && workOrder.status === 'thread_opened' && (
-                    <div
-                        className="flex items-center gap-1 px-4 pb-3 text-xs font-semibold"
-                        style={{ color: 'var(--st-progress)' }}
-                    >
-                        Open thread
-                        <ArrowRight size={13} />
+                    <div className="flex items-center gap-1.5 px-4 pb-3">
+                        <Badge variant="attention" className="text-xs">
+                            Open thread
+                            <ArrowRight size={13} />
+                        </Badge>
                     </div>
                 )}
 
                 {/* Claimed-by-other indicator */}
                 {isOtherTech && (
-                    <div className="px-4 pb-3" onClick={e => e.stopPropagation()}>
+                    <div
+                        className="px-4 pb-3"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <Badge
                             variant="outline"
                             className="text-xs text-muted-foreground border-border"

@@ -119,10 +119,13 @@ export default function CreateWorkOrderDialog({
     }
 
     return (
-        <Dialog open={open} onOpenChange={(nextOpen) => {
-            if (isCreating) return;
-            onOpenChange(nextOpen);
-        }}>
+        <Dialog
+            open={open}
+            onOpenChange={(nextOpen) => {
+                if (isCreating) return;
+                onOpenChange(nextOpen);
+            }}
+        >
             <DialogContent
                 className=" flex flex-col"
                 hideCloseButton
@@ -186,20 +189,32 @@ export default function CreateWorkOrderDialog({
                                     )}
                                     disabled={isCreating}
                                     onClick={() => {
-                                        const allSelected = filteredUsers.every((u) =>
-                                            selectedEmails.includes(u.email),
+                                        const allSelected = filteredUsers.every(
+                                            (u) =>
+                                                selectedEmails.includes(
+                                                    u.email,
+                                                ),
                                         );
                                         if (allSelected) {
                                             // Deselect all filtered users
                                             setSelectedEmails((prev) =>
                                                 prev.filter(
-                                                    (e) => !filteredUsers.some((u) => u.email === e),
+                                                    (e) =>
+                                                        !filteredUsers.some(
+                                                            (u) =>
+                                                                u.email === e,
+                                                        ),
                                                 ),
                                             );
                                         } else {
                                             // Select all filtered users (preserve any existing selections)
                                             setSelectedEmails((prev) => [
-                                                ...new Set([...prev, ...filteredUsers.map((u) => u.email)]),
+                                                ...new Set([
+                                                    ...prev,
+                                                    ...filteredUsers.map(
+                                                        (u) => u.email,
+                                                    ),
+                                                ]),
                                             ]);
                                         }
                                     }}
@@ -207,7 +222,11 @@ export default function CreateWorkOrderDialog({
                                     {(() => {
                                         const allSelected =
                                             filteredUsers.length > 0 &&
-                                            filteredUsers.every((u) => selectedEmails.includes(u.email));
+                                            filteredUsers.every((u) =>
+                                                selectedEmails.includes(
+                                                    u.email,
+                                                ),
+                                            );
                                         return (
                                             <>
                                                 <div
@@ -218,9 +237,13 @@ export default function CreateWorkOrderDialog({
                                                             : 'border-input',
                                                     )}
                                                 >
-                                                    {allSelected && <Check className="size-3" />}
+                                                    {allSelected && (
+                                                        <Check className="size-3" />
+                                                    )}
                                                 </div>
-                                                <span className="truncate font-medium">Select All</span>
+                                                <span className="truncate font-medium">
+                                                    Select All
+                                                </span>
                                             </>
                                         );
                                     })()}
@@ -238,7 +261,9 @@ export default function CreateWorkOrderDialog({
                                                 'flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-muted transition-colors',
                                                 isSelected && 'bg-primary/5',
                                             )}
-                                            onClick={() => toggleUser(user.email)}
+                                            onClick={() =>
+                                                toggleUser(user.email)
+                                            }
                                             disabled={isCreating}
                                         >
                                             <div
@@ -274,8 +299,8 @@ export default function CreateWorkOrderDialog({
                     )}
                 </div>
 
-                {
-                    hasAttachments && <button
+                {hasAttachments && (
+                    <button
                         type="button"
                         className="flex items-center gap-2 text-sm text-left"
                         onClick={() => setIncludeAttachments((v) => !v)}
@@ -293,7 +318,7 @@ export default function CreateWorkOrderDialog({
                         </div>
                         I consent to include thread photos in the new work order
                     </button>
-                }
+                )}
 
                 <div className="w-full flex flex-row items-center gap-5">
                     <Button
@@ -307,7 +332,11 @@ export default function CreateWorkOrderDialog({
                     <Button
                         className="flex-1"
                         onClick={handleConfirm}
-                        disabled={selectedEmails.length === 0 || !dueDate || isCreating}
+                        disabled={
+                            selectedEmails.length === 0 ||
+                            !dueDate ||
+                            isCreating
+                        }
                         loading={isCreating}
                     >
                         Confirm
