@@ -281,7 +281,7 @@ export default function DraftsDialog() {
                         <div
                             className={cn(
                                 'pointer-events-auto relative flex flex-col w-full max-w-lg max-h-[90vh]',
-                                'bg-background border rounded-lg shadow-lg',
+                                'bg-background border rounded-lg',
                             )}
                             // Prevent backdrop click from firing when clicking inside
                             onClick={(e) => e.stopPropagation()}

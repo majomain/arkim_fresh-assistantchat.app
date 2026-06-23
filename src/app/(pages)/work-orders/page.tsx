@@ -10,17 +10,14 @@ import {
     WorkOrderDetailList,
     WorkOrderStatus,
 } from '@/types/workOrder/workOrder';
-import {
-    ClipboardListIcon,
-    RefreshCcw,
-    SlidersHorizontal,
-    X,
-} from 'lucide-react';
+import { ClipboardListIcon, SlidersHorizontal, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import RefreshButton from '@/components/core/RefreshButton';
 import Search from '@/components/core/filters/Search';
 import DisplayCard from '@/components/core/work-order/DisplayCard';
+import PageTopBar from '@/components/layout/PageTopBar';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datepicker';
 import {
@@ -37,11 +34,6 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { errorToast } from '@/components/ui/sonner';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 import { cn } from '@/lib/utils';
 
@@ -77,6 +69,40 @@ function getInitialFilters(searchParams: URLSearchParams) {
     return { selectedDueDate, status };
 }
 
+type TabFilter = 'all' | 'overdue' | 'today' | 'week';
+
+function getDayDiffFromToday(d: string, today: Date): number {
+    const due = new Date(d.includes('T') ? d : `${d}T00:00:00`);
+    return Math.round((due.getTime() - today.getTime()) / 86_400_000);
+}
+
+function isWorkOrderOverdue(w: WorkOrderDetailList[0], today: Date): boolean {
+    return (
+        (w.status === 'open' || w.status === 'thread_opened') &&
+        getDayDiffFromToday(w.dueDate, today) < 0
+    );
+}
+
+function isWorkOrderDueToday(w: WorkOrderDetailList[0], today: Date): boolean {
+    return getDayDiffFromToday(w.dueDate, today) === 0;
+}
+
+function isWorkOrderDueThisWeek(
+    w: WorkOrderDetailList[0],
+    today: Date,
+): boolean {
+    const diff = getDayDiffFromToday(w.dueDate, today);
+    return diff > 0 && diff <= 7;
+}
+
+function urgencyScore(w: WorkOrderDetailList[0], today: Date): number {
+    if (isWorkOrderOverdue(w, today)) return 0;
+    if (isWorkOrderDueToday(w, today)) return 1;
+    const diff = getDayDiffFromToday(w.dueDate, today);
+    if (diff > 0 && diff <= 7) return 2;
+    return 3;
+}
+
 export default function WorkOrderPage() {
     const { user } = useAuth();
     const { isAssetListLoading, assetList } = useAsset();
@@ -99,9 +125,7 @@ export default function WorkOrderPage() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [selectedAssetId, setSelectedAssetId] = useState<string>('');
     const [search, setSearch] = useState<string>('');
-    const [tabFilter, setTabFilter] = useState<
-        'all' | 'overdue' | 'today' | 'week'
-    >('all');
+    const [tabFilter, setTabFilter] = useState<TabFilter>('today');
     const debouncedSearch = useDebounce(search, 400);
     const isTyping = search !== debouncedSearch;
 
@@ -138,6 +162,7 @@ export default function WorkOrderPage() {
         setStatus('');
         setSelectedAssetId('');
         setSearch('');
+        setTabFilter('today');
         filtersRef.current = {
             ...filtersRef.current,
             selectedDueDate: undefined,
@@ -230,9 +255,13 @@ export default function WorkOrderPage() {
     ]);
 
     const sortedWorkOrders = useMemo(() => {
-        return [...workOrders].sort((a, b) =>
-            b.dueDate.localeCompare(a.dueDate),
-        );
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return [...workOrders].sort((a, b) => {
+            const urgencyDiff = urgencyScore(a, today) - urgencyScore(b, today);
+            if (urgencyDiff !== 0) return urgencyDiff;
+            return a.dueDate.localeCompare(b.dueDate);
+        });
     }, [workOrders]);
 
     const handleRefresh = useCallback(() => {
@@ -253,21 +282,23 @@ export default function WorkOrderPage() {
     };
 
     // ── Bucket helpers ────────────────────────────────────────────────────────
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const getDayDiff = (d: string) => {
-        const due = new Date(d.includes('T') ? d : `${d}T00:00:00`);
-        return Math.round((due.getTime() - today.getTime()) / 86_400_000);
-    };
-    const isOverdue = (w: (typeof sortedWorkOrders)[0]) =>
-        (w.status === 'open' || w.status === 'thread_opened') &&
-        getDayDiff(w.dueDate) < 0;
-    const isDueToday = (w: (typeof sortedWorkOrders)[0]) =>
-        getDayDiff(w.dueDate) === 0;
-    const isDueThisWeek = (w: (typeof sortedWorkOrders)[0]) => {
-        const d = getDayDiff(w.dueDate);
-        return d > 0 && d <= 7;
-    };
+    const today = useMemo(() => {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, []);
+    const isOverdue = useCallback(
+        (w: (typeof sortedWorkOrders)[0]) => isWorkOrderOverdue(w, today),
+        [today],
+    );
+    const isDueToday = useCallback(
+        (w: (typeof sortedWorkOrders)[0]) => isWorkOrderDueToday(w, today),
+        [today],
+    );
+    const isDueThisWeek = useCallback(
+        (w: (typeof sortedWorkOrders)[0]) => isWorkOrderDueThisWeek(w, today),
+        [today],
+    );
 
     // ── Quick-filter counts + filtered list ──────────────────────────────────
     const counts = {
@@ -285,80 +316,96 @@ export default function WorkOrderPage() {
                 ? sortedWorkOrders.filter(isDueToday)
                 : sortedWorkOrders.filter(isDueThisWeek);
 
-    const tabs: { k: typeof tabFilter; label: string }[] = [
-        { k: 'all', label: 'All' },
-        { k: 'overdue', label: 'Overdue' },
+    const tabs: { k: TabFilter; label: string }[] = [
         { k: 'today', label: 'Today' },
         { k: 'week', label: 'This week' },
+        { k: 'overdue', label: 'Overdue' },
+        { k: 'all', label: 'All' },
     ];
 
     return (
         <div
-            className="flex flex-col h-[calc(100dvh-4.5rem)]"
+            className="flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-1.25rem)]"
             style={{ gap: 0 }}
         >
-            {/* ── Top bar ─────────────────────────────────────────────────── */}
-            <div
-                className="flex-shrink-0 flex items-center gap-3 px-1 py-3"
-                style={{ borderBottom: '1px solid var(--border-col)' }}
-            >
-                <div className="flex-1 min-w-0">
-                    <p
-                        style={{
-                            fontSize: 18,
-                            fontWeight: 600,
-                            letterSpacing: '-0.2px',
-                            color: 'var(--text-strong)',
-                            lineHeight: 1.2,
-                        }}
-                    >
-                        My Work Orders
-                    </p>
-                    {sortedWorkOrders.length > 0 && (
-                        <p
-                            style={{
-                                fontSize: 13,
-                                color: 'var(--muted-col)',
-                                marginTop: 2,
-                            }}
-                        >
-                            {sortedWorkOrders.length} open
-                            {counts.overdue > 0 && (
-                                <span style={{ color: 'var(--st-overdue)' }}>
-                                    {' '}
-                                    · {counts.overdue} overdue
-                                </span>
-                            )}
-                        </p>
-                    )}
-                </div>
+            <PageTopBar title="My Work Orders" />
 
-                {/* Controls */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* ── Queue filters ─────────────────────────────────────────── */}
+            <div className="flex-shrink-0 flex items-center gap-1.5 px-1 py-2.5 overflow-x-auto">
+                {!isLoading &&
+                    !isTyping &&
+                    !isAssetListLoading &&
+                    tabs.map(({ k, label }) => {
+                        const active = tabFilter === k;
+                        const value = counts[k];
+                        const overdueCount =
+                            k === 'overdue' && value > 0 && !active;
+                        return (
+                            <button
+                                key={k}
+                                type="button"
+                                onClick={() => setTabFilter(k)}
+                                className={cn(
+                                    'queue-filter-chip',
+                                    active && 'tab-chip-active',
+                                    !active && 'chip-hover-border',
+                                )}
+                                aria-current={active ? 'true' : undefined}
+                            >
+                                {label}
+                                <span
+                                    className="type-micro"
+                                    style={{
+                                        fontWeight: 700,
+                                        opacity: active
+                                            ? 0.85
+                                            : overdueCount
+                                              ? 1
+                                              : 0.5,
+                                        color: overdueCount
+                                            ? 'var(--st-overdue)'
+                                            : undefined,
+                                    }}
+                                >
+                                    {value}
+                                </span>
+                            </button>
+                        );
+                    })}
+
+                <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
                     <Search
                         search={search}
                         setSearch={setSearch}
                         placeHolder="Search work orders"
+                        className="w-44 sm:w-52 md:w-60"
                     />
-
-                    {/* Advanced filters */}
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="relative gap-1.5 h-8 px-2.5"
-                                style={{ fontSize: 13, fontWeight: 500 }}
+                            <button
+                                type="button"
+                                className={cn(
+                                    'queue-filter-chip queue-filter-chip--square',
+                                    activeFilterCount > 0
+                                        ? 'tab-chip-active'
+                                        : 'chip-hover-border',
+                                )}
                                 disabled={isLoading || isTyping}
                             >
                                 <SlidersHorizontal className="size-3.5" />
                                 Filters
                                 {activeFilterCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                                    <span
+                                        className="type-micro"
+                                        style={{
+                                            fontWeight: 700,
+                                            opacity: 0.85,
+                                        }}
+                                    >
                                         {activeFilterCount}
                                     </span>
                                 )}
-                            </Button>
+                            </button>
                         </PopoverTrigger>
                         <PopoverContent
                             align="end"
@@ -366,7 +413,10 @@ export default function WorkOrderPage() {
                             sideOffset={6}
                         >
                             <div className="flex items-center justify-between mb-3">
-                                <p style={{ fontSize: 13, fontWeight: 600 }}>
+                                <p
+                                    className="type-body"
+                                    style={{ fontWeight: 600 }}
+                                >
                                     Advanced filters
                                 </p>
                                 {activeFilterCount > 0 && (
@@ -468,148 +518,11 @@ export default function WorkOrderPage() {
                         </PopoverContent>
                     </Popover>
 
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                onClick={() => {
-                                    if (!isLoading && !isTyping)
-                                        handleRefresh();
-                                }}
-                                disabled={isLoading || isTyping}
-                            >
-                                <RefreshCcw
-                                    className={cn(
-                                        'size-3.5',
-                                        isLoading && 'animate-spin',
-                                    )}
-                                />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" align="end">
-                            Refresh
-                        </TooltipContent>
-                    </Tooltip>
-                </div>
-            </div>
-
-            {/* ── Stats strip ─────────────────────────────────────────────── */}
-            {!isLoading && sortedWorkOrders.length > 0 && (
-                <div
-                    className="flex-shrink-0 flex items-center gap-0"
-                    style={{ borderBottom: '1px solid var(--border-col)' }}
-                >
-                    {[
-                        {
-                            label: 'Overdue',
-                            value: counts.overdue,
-                            color:
-                                counts.overdue > 0
-                                    ? 'var(--st-overdue)'
-                                    : 'var(--text-strong)',
-                        },
-                        {
-                            label: 'Due today',
-                            value: counts.today,
-                            color: 'var(--text-strong)',
-                        },
-                        {
-                            label: 'Open total',
-                            value: sortedWorkOrders.length,
-                            color: 'var(--text-strong)',
-                        },
-                    ].map((s, i) => (
-                        <div
-                            key={i}
-                            className={cn(
-                                'flex flex-col items-start px-4 py-2.5',
-                                i === 0 &&
-                                    counts.overdue > 0 &&
-                                    'surface-attention--bar',
-                            )}
-                            style={{
-                                borderRight: '1px solid var(--border-col)',
-                                minWidth: 80,
-                                background:
-                                    i === 0 && counts.overdue > 0
-                                        ? 'var(--attention-bg)'
-                                        : undefined,
-                            }}
-                        >
-                            <span
-                                style={{
-                                    fontSize: 22,
-                                    fontWeight: 300,
-                                    letterSpacing: '-0.5px',
-                                    color: s.color,
-                                    lineHeight: 1,
-                                }}
-                            >
-                                {s.value}
-                            </span>
-                            <span
-                                style={{
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    color: 'var(--muted-2)',
-                                    marginTop: 3,
-                                    letterSpacing: '0.2px',
-                                }}
-                            >
-                                {s.label}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* ── Filter segment tabs ──────────────────────────────────────── */}
-            <div
-                className="flex-shrink-0 flex items-center gap-2 px-1 py-2.5 overflow-x-auto"
-                style={{ borderBottom: '1px solid var(--border-col)' }}
-            >
-                <span
-                    style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        letterSpacing: '1.2px',
-                        textTransform: 'uppercase',
-                        color: 'var(--muted-2)',
-                        flexShrink: 0,
-                        paddingLeft: 2,
-                    }}
-                >
-                    Queue
-                </span>
-                <div className="flex items-center gap-1.5 ml-1">
-                    {tabs.map(({ k, label }) => {
-                        const active = tabFilter === k;
-                        return (
-                            <button
-                                key={k}
-                                type="button"
-                                onClick={() => setTabFilter(k)}
-                                className={cn(
-                                    'queue-filter-chip',
-                                    active && 'tab-chip-active',
-                                    !active && 'chip-hover-border',
-                                )}
-                            >
-                                {label}
-                                <span
-                                    style={{
-                                        opacity: active ? 0.65 : 0.5,
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                    }}
-                                >
-                                    {counts[k]}
-                                </span>
-                            </button>
-                        );
-                    })}
+                    <RefreshButton
+                        onClick={handleRefresh}
+                        disabled={isTyping}
+                        loading={isLoading}
+                    />
                 </div>
             </div>
 
@@ -648,8 +561,8 @@ export default function WorkOrderPage() {
                             strokeWidth={1.1}
                         />
                         <p
+                            className="type-section"
                             style={{
-                                fontSize: 18,
                                 fontWeight: 300,
                                 color: 'var(--text-strong)',
                                 letterSpacing: '-0.2px',
@@ -660,8 +573,8 @@ export default function WorkOrderPage() {
                                 : 'No work orders'}
                         </p>
                         <p
-                            className="serif"
-                            style={{ fontSize: 15, color: 'var(--muted-col)' }}
+                            className="serif type-medium"
+                            style={{ color: 'var(--muted-col)' }}
                         >
                             {tabFilter !== 'all'
                                 ? 'Try "All" to see the full queue.'

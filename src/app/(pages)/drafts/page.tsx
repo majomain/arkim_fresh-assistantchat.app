@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/navigation';
 
 import { TooltipIconButton } from '@/components/core/TooltipIconButton';
+import PageTopBar from '@/components/layout/PageTopBar';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -253,17 +254,20 @@ export default function DraftPage() {
 
     return (
         <div className="flex flex-col gap-4 pb-5">
-            <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-col gap-1">
-                    <h1 className="page-header">Drafts</h1>
-                    <span className="page-subTitle ml-0.5">
+            <PageTopBar
+                title="Drafts"
+                meta={
+                    <span className="page-subTitle ml-0.5 block mt-1">
                         Manage your messaging drafts
                     </span>
-                </div>
-                {draftCount > 0 && (
+                }
+            />
+
+            {draftCount > 0 && (
+                <div className="flex justify-end px-1">
                     <ClearAllConfirmation onDelete={handleClearAll} />
-                )}
-            </div>
+                </div>
+            )}
 
             {hasDrafts ? (
                 <div className="flex flex-col gap-5">

@@ -8,12 +8,14 @@ import {
     ChevronRight,
     MapPin,
     MessageSquareText,
-    RefreshCw,
     Search as SearchIcon,
     X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+
+import RefreshButton from '@/components/core/RefreshButton';
+import PageTopBar from '@/components/layout/PageTopBar';
 
 // Health derivation — real backend status maps here; default healthy.
 function assetHealth(a: AssetWithThreads): { color: string; label: string } {
@@ -66,81 +68,17 @@ export default function AssetsListPage() {
     ).length;
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: 'calc(100dvh - 4.5rem)',
-            }}
-        >
-            {/* ── Header ───────────────────────────────────────────────────── */}
-            <div
-                style={{
-                    flexShrink: 0,
-                    padding: '12px 4px 14px',
-                    borderBottom: '1px solid var(--border-col)',
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 12,
-                    }}
-                >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <p className="eyebrow" style={{ marginBottom: 3 }}>
-                            Asset registry
-                        </p>
-                        <p
-                            style={{
-                                fontSize: 18,
-                                fontWeight: 600,
-                                letterSpacing: '-0.2px',
-                                color: 'var(--text-strong)',
-                                lineHeight: 1.2,
-                            }}
-                        >
-                            Assets
-                        </p>
-                    </div>
-                    <button
-                        onClick={() =>
-                            !isAssetListLoading && refreshAssetList()
-                        }
-                        disabled={isAssetListLoading}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 32,
-                            height: 32,
-                            borderRadius: 3,
-                            flexShrink: 0,
-                            border: '1px solid var(--border-col)',
-                            background: 'transparent',
-                            color: 'var(--muted-col)',
-                            cursor: isAssetListLoading
-                                ? 'not-allowed'
-                                : 'pointer',
-                        }}
-                        title="Refresh assets"
-                    >
-                        <RefreshCw
-                            size={14}
-                            className={isAssetListLoading ? 'animate-spin' : ''}
-                        />
-                    </button>
-                </div>
+        <div className="flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-1.25rem)]">
+            <PageTopBar title="Assets" />
 
-                {/* sub line */}
+            {/* Stats + search + refresh */}
+            <div className="flex-shrink-0 px-1 pb-2.5">
                 <div
+                    className="type-body"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 10,
-                        marginTop: 8,
-                        fontSize: 13,
                         color: 'var(--muted-col)',
                         fontWeight: 500,
                     }}
@@ -166,50 +104,56 @@ export default function AssetsListPage() {
                     )}
                 </div>
 
-                {/* search */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginTop: 12,
-                        background: 'var(--surface-2)',
-                        border: '1px solid var(--border-col)',
-                        borderRadius: 3,
-                        padding: '8px 12px',
-                    }}
-                >
-                    <SearchIcon
-                        size={16}
-                        style={{ color: 'var(--muted-col)', flexShrink: 0 }}
-                    />
-                    <input
-                        value={q}
-                        onChange={(e) => setQ(e.target.value)}
-                        placeholder="Search assets, make or location…"
+                <div className="flex items-center gap-1.5 mt-3">
+                    <div
                         style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
                             flex: 1,
-                            border: 'none',
-                            outline: 'none',
-                            background: 'transparent',
-                            fontSize: 14,
-                            color: 'var(--text)',
+                            background: 'var(--surface-2)',
+                            border: '1px solid var(--border-col)',
+                            borderRadius: 3,
+                            padding: '8px 12px',
                         }}
-                    />
-                    {q && (
-                        <button
-                            onClick={() => setQ('')}
+                    >
+                        <SearchIcon
+                            size={16}
+                            style={{ color: 'var(--muted-col)', flexShrink: 0 }}
+                        />
+                        <input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="Search assets, make or location…"
+                            className="type-body"
                             style={{
-                                display: 'flex',
-                                background: 'none',
+                                flex: 1,
                                 border: 'none',
-                                cursor: 'pointer',
-                                color: 'var(--muted-col)',
+                                outline: 'none',
+                                background: 'transparent',
+                                color: 'var(--text)',
                             }}
-                        >
-                            <X size={14} />
-                        </button>
-                    )}
+                        />
+                        {q && (
+                            <button
+                                onClick={() => setQ('')}
+                                style={{
+                                    display: 'flex',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: 'var(--muted-col)',
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
+                    <RefreshButton
+                        onClick={refreshAssetList}
+                        loading={isAssetListLoading}
+                        label="Refresh assets"
+                    />
                 </div>
             </div>
 
@@ -270,19 +214,16 @@ export default function AssetsListPage() {
                 ) : groups.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '48px 16px' }}>
                         <p
-                            className="serif"
-                            style={{
-                                fontSize: 17,
-                                color: 'var(--text-strong)',
-                            }}
+                            className="serif type-lead"
+                            style={{ color: 'var(--text-strong)' }}
                         >
                             {needle
                                 ? `No assets match “${q}.”`
                                 : 'No assets on this site yet.'}
                         </p>
                         <p
+                            className="type-body"
                             style={{
-                                fontSize: 13,
                                 color: 'var(--muted-col)',
                                 marginTop: 6,
                             }}
@@ -297,12 +238,12 @@ export default function AssetsListPage() {
                         <div key={loc} style={{ marginBottom: 4 }}>
                             {/* group header */}
                             <div
+                                className="type-micro"
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 6,
                                     padding: '12px 8px 6px',
-                                    fontSize: 11,
                                     fontWeight: 700,
                                     letterSpacing: '0.6px',
                                     textTransform: 'uppercase',
@@ -390,8 +331,8 @@ export default function AssetsListPage() {
                                         {/* name + meta */}
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <p
+                                                className="type-body"
                                                 style={{
-                                                    fontSize: 14,
                                                     fontWeight: 600,
                                                     color: 'var(--text)',
                                                     lineHeight: 1.3,
@@ -403,8 +344,8 @@ export default function AssetsListPage() {
                                                 {a.name}
                                             </p>
                                             <p
+                                                className="type-small"
                                                 style={{
-                                                    fontSize: 12,
                                                     color: 'var(--muted-col)',
                                                     marginTop: 1,
                                                     fontWeight: 500,

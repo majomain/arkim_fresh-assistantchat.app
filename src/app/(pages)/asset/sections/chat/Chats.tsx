@@ -85,8 +85,8 @@ export default function Chats() {
                     style={{ color: 'var(--muted-col)' }}
                 />
                 <span
+                    className="type-body"
                     style={{
-                        fontSize: 13.5,
                         fontWeight: 600,
                         color: 'var(--text)',
                     }}
@@ -94,11 +94,11 @@ export default function Chats() {
                     Threads
                 </span>
                 <span
+                    className="type-small"
                     style={{
                         marginLeft: 'auto',
                         minWidth: 22,
                         textAlign: 'center',
-                        fontSize: 12,
                         fontWeight: 600,
                         color: 'var(--muted-col)',
                         background: 'var(--surface-2)',
@@ -165,8 +165,8 @@ export default function Chats() {
                     >
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <p
+                                className="type-body"
                                 style={{
-                                    fontSize: 13.5,
                                     fontWeight: 600,
                                     color: 'var(--text)',
                                     lineHeight: 1.3,
@@ -178,8 +178,8 @@ export default function Chats() {
                                 {thread.workOrderTitle ?? thread.title}
                             </p>
                             <p
+                                className="type-small"
                                 style={{
-                                    fontSize: 12,
                                     color: 'var(--muted-col)',
                                     marginTop: 2,
                                 }}
@@ -198,9 +198,8 @@ export default function Chats() {
                 ))
             ) : (
                 <p
-                    className="serif"
+                    className="serif type-body"
                     style={{
-                        fontSize: 13.5,
                         color: 'var(--muted-col)',
                         padding: '18px 14px',
                     }}

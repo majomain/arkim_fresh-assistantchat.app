@@ -79,8 +79,8 @@ export default function StreamTimeline({
                 )}
 
                 <span
+                    className="type-body"
                     style={{
-                        fontSize: 13.5,
                         fontWeight: 600,
                         color: 'var(--text)',
                         letterSpacing: '-0.1px',
@@ -91,8 +91,8 @@ export default function StreamTimeline({
 
                 {/* live step label or summary */}
                 <span
+                    className="type-small"
                     style={{
-                        fontSize: 12,
                         color: 'var(--muted-col)',
                         fontWeight: 500,
                     }}
@@ -274,8 +274,8 @@ function LiveStep({
             >
                 {step.title && (
                     <p
+                        className="type-body"
                         style={{
-                            fontSize: 13.5,
                             fontWeight: isActive ? 600 : 500,
                             color: isActive
                                 ? 'var(--text)'
@@ -291,8 +291,8 @@ function LiveStep({
                 )}
                 {step.content && (
                     <p
+                        className="type-body"
                         style={{
-                            fontSize: 13,
                             color: 'var(--muted-col)',
                             lineHeight: 1.5,
                         }}

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useChat } from '@/hooks/use-chat';
 import { useLocation } from '@/hooks/use-location';
 import { WorkOrderDetail, WorkOrderStatus } from '@/types/workOrder/workOrder';
-import { AlertTriangle, ArrowRight, Box, Clock } from 'lucide-react';
+import { AlertTriangle, Box, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
@@ -64,36 +64,59 @@ function resolveStatus(status: WorkOrderStatus, diff: number | null) {
     return { overdue };
 }
 
-function statusColor(status: WorkOrderStatus, overdue: boolean): string {
-    if (overdue) return 'var(--st-overdue)';
+function statusColor(status: WorkOrderStatus): string {
     switch (status) {
         case 'open':
             return 'var(--st-open)';
         case 'thread_opened':
             return 'var(--st-progress)';
         case 'completed':
-            return 'var(--st-done)';
+            return '#0dbf98';
         case 'cancelled':
-            return 'var(--st-cancel)';
+            return 'var(--st-on-hold)';
         default:
             return 'var(--muted-foreground)';
     }
 }
 
-function statusLabel(
+type CardStatusPillKey = 'open' | 'on_hold' | 'in_progress' | 'completed';
+
+const CARD_STATUS_PILLS: { key: CardStatusPillKey; label: string }[] = [
+    { key: 'open', label: 'Open' },
+    { key: 'on_hold', label: 'On Hold' },
+    { key: 'in_progress', label: 'In Progress' },
+    { key: 'completed', label: 'Completed' },
+];
+
+function activeStatusPillKey(status: WorkOrderStatus): CardStatusPillKey {
+    switch (status) {
+        case 'open':
+            return 'open';
+        case 'thread_opened':
+            return 'in_progress';
+        case 'completed':
+            return 'completed';
+        case 'cancelled':
+            return 'on_hold';
+        default:
+            return 'open';
+    }
+}
+
+function jobActionLabel(
     status: WorkOrderStatus,
-    overdue: boolean,
-    getLabel?: (s: WorkOrderStatus) => string,
-): string {
-    if (overdue) return 'Overdue';
-    return getLabel?.(status) ?? status;
+    canContinueThread: boolean,
+): string | null {
+    if (status === 'open') return 'Start Work';
+    if (status === 'thread_opened') return 'Open Work';
+    if (canContinueThread) return 'Continue Work';
+    return null;
 }
 
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function DisplayCard({
     workOrder,
-    getStatusLabel,
 }: {
     workOrder: WorkOrderDetail;
     getStatusLabel?: (status: WorkOrderStatus) => string;
@@ -109,8 +132,8 @@ export default function DisplayCard({
 
     const diff = getDayDiff(workOrder.dueDate);
     const { overdue } = resolveStatus(workOrder.status, diff);
-    const dotColor = statusColor(workOrder.status, overdue);
-    const label = statusLabel(workOrder.status, overdue, getStatusLabel);
+    const borderColor = statusColor(workOrder.status);
+    const activePillKey = activeStatusPillKey(workOrder.status);
     const dueLabel = formatDueLabel(diff, workOrder.dueDate);
 
     const dueColor =
@@ -120,17 +143,28 @@ export default function DisplayCard({
               ? 'var(--st-open)'
               : 'var(--muted-foreground)';
 
+    const isOnHold = workOrder.status === 'cancelled';
+
     const isOtherTech =
         workOrder.status === 'thread_opened' &&
         workOrder.threadOpenedBy !== user?.email;
 
+    const canContinueThread =
+        isOnHold &&
+        !!workOrder.threadId &&
+        workOrder.threadOpenedBy === user?.email;
+
     const isClickable =
         (workOrder.status === 'open' ||
             (workOrder.status === 'thread_opened' &&
-                workOrder.threadOpenedBy === user?.email)) &&
+                workOrder.threadOpenedBy === user?.email) ||
+            canContinueThread) &&
         !isOtherTech;
 
     const hasLongDesc = workOrder.description?.length > 80;
+    const actionLabel = isClickable
+        ? jobActionLabel(workOrder.status, canContinueThread)
+        : null;
 
     function handleOpen() {
         if (!isClickable) return;
@@ -153,7 +187,7 @@ export default function DisplayCard({
                 },
                 'assistant',
             );
-        } else {
+        } else if (workOrder.threadId) {
             router.push(`/thread?id=${workOrder.threadId}`);
         }
     }
@@ -161,51 +195,141 @@ export default function DisplayCard({
     return (
         <Card
             className={cn(
-                'overflow-hidden group',
-                isClickable && 'card-hover-subtle cursor-pointer',
-                isClickable && workOrder.status === 'open' && 'card-attention',
+                'overflow-hidden group py-0 gap-0',
+                isClickable &&
+                    'card-hover-subtle card-hover-primary cursor-pointer',
+                isClickable &&
+                    (workOrder.status === 'thread_opened' ||
+                        canContinueThread) &&
+                    'card-attention',
                 isOtherTech && 'opacity-60',
                 !isClickable && 'cursor-default',
             )}
             style={{
-                borderLeft: `6px solid ${dotColor}`,
-                borderTop: 'none',
-                borderRight: 'none',
-                borderBottom: 'none',
+                border: '1px solid var(--border-col)',
+                borderLeftWidth: 8,
+                borderLeftColor: borderColor,
             }}
             onClick={isClickable ? handleOpen : undefined}
+            aria-label={actionLabel ?? undefined}
         >
-            <CardContent className="flex flex-col gap-0 p-0">
+            <CardContent className="relative flex flex-col gap-0 p-0">
                 <div style={{ padding: '14px 16px 15px' }}>
-                    {/* Row 1: Status pill + Due tag */}
-                    <div className="flex items-center justify-between">
-                        {/* Status pill */}
-                        <span
+                    {/* Row 1: Status track */}
+                    <div
+                        className="wo-card-status-track"
+                        aria-label="Work order status"
+                    >
+                        {CARD_STATUS_PILLS.map((pill) => (
+                            <span
+                                key={pill.key}
+                                className={cn(
+                                    'wo-card-status-track-pill',
+                                    pill.key === activePillKey
+                                        ? pill.key === 'on_hold'
+                                            ? 'wo-card-status-track-pill--active-on-hold'
+                                            : pill.key === 'completed'
+                                              ? 'wo-card-status-track-pill--active-completed'
+                                              : 'wo-card-status-track-pill--active'
+                                        : 'wo-card-status-track-pill--inactive',
+                                )}
+                                aria-current={
+                                    pill.key === activePillKey
+                                        ? 'step'
+                                        : undefined
+                                }
+                            >
+                                {pill.label}
+                            </span>
+                        ))}
+                    </div>
+
+                    {/* Row 2: Title */}
+                    <p
+                        className="type-title text-foreground"
+                        style={{
+                            fontWeight: 600,
+                            marginTop: 11,
+                            letterSpacing: '-0.1px',
+                            lineHeight: 1.25,
+                        }}
+                    >
+                        {workOrder.title}
+                    </p>
+
+                    {/* Row 3: Asset meta */}
+                    {asset && (
+                        <div
+                            className="type-body"
                             style={{
-                                display: 'inline-flex',
+                                display: 'flex',
                                 alignItems: 'center',
                                 gap: 6,
-                                fontSize: 11,
-                                fontWeight: 600,
-                                letterSpacing: '0.5px',
-                                textTransform: 'uppercase',
-                                color: dotColor,
+                                marginTop: 9,
+                                fontWeight: 500,
+                                overflow: 'hidden',
                             }}
                         >
-                            <span
-                                className="status-dot"
-                                style={{ background: dotColor }}
+                            <Box
+                                size={13}
+                                className="text-muted-foreground/50 shrink-0"
                             />
-                            {label}
-                        </span>
+                            <span className="text-foreground shrink-0">
+                                {asset.name}
+                            </span>
+                            <span className="text-muted-foreground/40 shrink-0">
+                                ·
+                            </span>
+                            <span className="text-muted-foreground truncate">
+                                {asset.manufacturer} {asset.model}
+                            </span>
+                        </div>
+                    )}
 
-                        {/* Due tag */}
+                    {/* Row 4: Description + Due tag */}
+                    <div
+                        className="flex items-end justify-between gap-3"
+                        style={{ marginTop: 10 }}
+                    >
+                        <div className="min-w-0 flex-1">
+                            <p
+                                className="type-body text-muted-foreground"
+                                style={{ lineHeight: 1.55 }}
+                            >
+                                {hasLongDesc
+                                    ? workOrder.description.slice(0, 80) + '…'
+                                    : workOrder.description}
+                            </p>
+
+                            {hasLongDesc && (
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <button
+                                            className="mt-1 text-xs font-medium text-link hover:underline text-left"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            Show full description
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <DialogTitle>Description</DialogTitle>
+                                        <DialogDescription />
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                            {workOrder.description}
+                                        </p>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </div>
+
                         <span
+                            className="type-small"
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: 5,
-                                fontSize: 12,
                                 fontWeight: 600,
                                 color: dueColor,
                                 letterSpacing: '0.2px',
@@ -227,84 +351,6 @@ export default function DisplayCard({
                             {dueLabel}
                         </span>
                     </div>
-
-                    {/* Row 2: Title */}
-                    <p
-                        className="text-foreground"
-                        style={{
-                            fontSize: 15,
-                            fontWeight: 600,
-                            marginTop: 11,
-                            letterSpacing: '-0.1px',
-                            lineHeight: 1.25,
-                        }}
-                    >
-                        {workOrder.title}
-                    </p>
-
-                    {/* Row 3: Asset meta */}
-                    {asset && (
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                marginTop: 9,
-                                fontSize: 12.5,
-                                fontWeight: 500,
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <Box
-                                size={13}
-                                className="text-muted-foreground/50 shrink-0"
-                            />
-                            <span className="text-foreground shrink-0">
-                                {asset.name}
-                            </span>
-                            <span className="text-muted-foreground/40 shrink-0">
-                                ·
-                            </span>
-                            <span className="text-muted-foreground truncate">
-                                {asset.manufacturer} {asset.model}
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Row 4: Description */}
-                    <p
-                        className="text-muted-foreground"
-                        style={{
-                            fontSize: 13,
-                            marginTop: 10,
-                            lineHeight: 1.55,
-                        }}
-                    >
-                        {hasLongDesc
-                            ? workOrder.description.slice(0, 80) + '…'
-                            : workOrder.description}
-                    </p>
-
-                    {/* Show-more dialog trigger */}
-                    {hasLongDesc && (
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <button
-                                    className="mt-1 text-xs font-medium text-link hover:underline text-left"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    Show full description
-                                </button>
-                            </DialogTrigger>
-                            <DialogContent onClick={(e) => e.stopPropagation()}>
-                                <DialogTitle>Description</DialogTitle>
-                                <DialogDescription />
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                    {workOrder.description}
-                                </p>
-                            </DialogContent>
-                        </Dialog>
-                    )}
                 </div>
 
                 {/* Footer: attachments / work-log links */}
@@ -332,16 +378,6 @@ export default function DisplayCard({
                     </div>
                 )}
 
-                {/* Open-thread CTA — visible for in-progress threads by this user */}
-                {isClickable && workOrder.status === 'thread_opened' && (
-                    <div className="flex items-center gap-1.5 px-4 pb-3">
-                        <Badge variant="attention" className="text-xs">
-                            Open thread
-                            <ArrowRight size={13} />
-                        </Badge>
-                    </div>
-                )}
-
                 {/* Claimed-by-other indicator */}
                 {isOtherTech && (
                     <div
@@ -354,6 +390,14 @@ export default function DisplayCard({
                         >
                             Another technician is working
                         </Badge>
+                    </div>
+                )}
+
+                {actionLabel && (
+                    <div className="wo-card-action-footer">
+                        <span className="wo-card-action-overlay__label">
+                            {actionLabel}
+                        </span>
                     </div>
                 )}
             </CardContent>

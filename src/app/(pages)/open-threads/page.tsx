@@ -6,12 +6,13 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { useLocation } from '@/hooks/use-location';
 import messagingService from '@/services/api/messagingService';
 import { ThreadDetailList } from '@/types/equipment/thread';
-import { Box, MessageSquare, RefreshCcw, Wrench } from 'lucide-react';
+import { Box, MessageSquare, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import RefreshButton from '@/components/core/RefreshButton';
 import Search from '@/components/core/filters/Search';
-import { Button } from '@/components/ui/button';
+import PageTopBar from '@/components/layout/PageTopBar';
 import {
     Select,
     SelectContent,
@@ -21,11 +22,6 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { errorToast } from '@/components/ui/sonner';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 import { cn } from '@/lib/utils';
 
@@ -129,169 +125,125 @@ export default function OpenThreadsPage() {
     ];
 
     return (
-        <div className="flex flex-col h-[calc(100dvh-4.5rem)]">
-            {/* ── Header ─────────────────────────────────────────────────────── */}
-            <div
-                className="flex-shrink-0"
-                style={{
-                    padding: '12px 4px 0',
-                    borderBottom: '1px solid var(--border-col)',
-                }}
-            >
-                <div className="flex flex-col md:flex-row md:items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                        <p className="eyebrow" style={{ marginBottom: 3 }}>
-                            Conversations
-                        </p>
-                        <h1
-                            style={{
-                                fontSize: 18,
-                                fontWeight: 600,
-                                letterSpacing: '-0.2px',
-                                color: 'var(--text-strong)',
-                                lineHeight: 1.2,
-                            }}
-                        >
-                            Threads
-                        </h1>
-                        <p
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                marginTop: 4,
-                                fontSize: 13,
-                                color: 'var(--muted-col)',
-                                fontWeight: 500,
-                            }}
-                        >
-                            <span>{openThreads.length} active</span>
-                            {activeCount > 0 && (
-                                <span className="attention-chip">
-                                    <span
-                                        className="status-dot"
-                                        style={{
-                                            background:
-                                                'var(--attention-border)',
-                                        }}
-                                    />
-                                    {activeCount} processing
-                                </span>
-                            )}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap">
-                        <Search
-                            search={search}
-                            setSearch={setSearch}
-                            placeHolder="Search threads"
-                        />
-                        <DraftsDialog />
-                        <Select
-                            value={selectedAssetId || 'all'}
-                            onValueChange={(v) =>
-                                setSelectedAssetId(v === 'all' ? '' : v)
-                            }
-                            disabled={isLoading || isTyping}
-                        >
-                            <SelectTrigger
-                                className="h-8 w-fit focus:ring-0"
-                                style={{ fontSize: 13 }}
-                            >
-                                <SelectValue placeholder="Asset" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Assets</SelectItem>
-                                <Separator className="my-1" />
-                                {assetList.map((a) => (
-                                    <SelectItem key={a.id} value={a.id}>
-                                        {a.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => {
-                                        if (!isLoading && !isTyping)
-                                            getOpenThreads();
-                                    }}
-                                    disabled={isLoading || isTyping}
-                                >
-                                    <RefreshCcw
-                                        className={cn(
-                                            'size-3.5',
-                                            isLoading && 'animate-spin',
-                                        )}
-                                    />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom" align="end">
-                                Refresh
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                </div>
-
-                {/* New-thread bar */}
-                <button
-                    type="button"
-                    onClick={() => router.push('/assets')}
-                    className="surface-attention surface-attention--bar flex w-full items-center gap-2.5 cursor-pointer text-left"
-                    style={{ margin: '12px 0', padding: '11px 14px' }}
-                >
-                    <span className="attention-icon-chip p-1.5">
-                        <MessageSquare size={16} />
-                    </span>
-                    <span
+        <div className="flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-1.25rem)]">
+            <PageTopBar
+                title="Threads"
+                meta={
+                    <p
+                        className="type-body"
                         style={{
-                            flex: 1,
-                            fontSize: 14,
-                            color: 'var(--text)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            marginTop: 4,
+                            color: 'var(--muted-col)',
                             fontWeight: 500,
                         }}
                     >
-                        Ask Arkim about an asset…
-                    </span>
-                    <span
-                        className="attention-icon-chip attention-icon-chip--solid"
-                        style={{ width: 28, height: 28 }}
-                    >
-                        <Box size={15} />
-                    </span>
-                </button>
-
-                {/* Type filter chips */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5">
-                    {typeTabs.map(({ k, label }) => {
-                        const active = typeFilter === k;
-                        return (
-                            <button
-                                key={k}
-                                onClick={() => setTypeFilter(k)}
-                                className={cn(
-                                    'queue-filter-chip',
-                                    active && 'tab-chip-active',
-                                    !active && 'chip-hover-border',
-                                )}
-                            >
-                                {label}
+                        <span>{openThreads.length} active</span>
+                        {activeCount > 0 && (
+                            <span className="attention-chip">
                                 <span
+                                    className="status-dot"
                                     style={{
-                                        opacity: active ? 0.65 : 0.5,
-                                        fontSize: 11,
-                                        fontWeight: 700,
+                                        background: 'var(--attention-border)',
                                     }}
-                                >
-                                    {counts[k]}
-                                </span>
-                            </button>
-                        );
-                    })}
+                                />
+                                {activeCount} processing
+                            </span>
+                        )}
+                    </p>
+                }
+            />
+
+            {/* New-thread bar */}
+            <button
+                type="button"
+                onClick={() => router.push('/assets')}
+                className="surface-attention surface-attention--bar flex w-full items-center gap-2.5 cursor-pointer text-left mx-1"
+                style={{ margin: '0 0 12px', padding: '11px 14px' }}
+            >
+                <span className="attention-icon-chip p-1.5">
+                    <MessageSquare size={16} />
+                </span>
+                <span
+                    className="type-body"
+                    style={{
+                        flex: 1,
+                        color: 'var(--text)',
+                        fontWeight: 500,
+                    }}
+                >
+                    Ask Arkim about an asset…
+                </span>
+                <span
+                    className="attention-icon-chip attention-icon-chip--solid"
+                    style={{ width: 28, height: 28 }}
+                >
+                    <Box size={15} />
+                </span>
+            </button>
+
+            {/* Type filter chips + controls */}
+            <div className="flex-shrink-0 flex items-center gap-1.5 px-1 py-2.5 overflow-x-auto">
+                {typeTabs.map(({ k, label }) => {
+                    const active = typeFilter === k;
+                    return (
+                        <button
+                            key={k}
+                            onClick={() => setTypeFilter(k)}
+                            className={cn(
+                                'queue-filter-chip',
+                                active && 'tab-chip-active',
+                                !active && 'chip-hover-border',
+                            )}
+                        >
+                            {label}
+                            <span
+                                className="type-micro"
+                                style={{
+                                    opacity: active ? 0.65 : 0.5,
+                                    fontWeight: 700,
+                                }}
+                            >
+                                {counts[k]}
+                            </span>
+                        </button>
+                    );
+                })}
+
+                <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+                    <Search
+                        search={search}
+                        setSearch={setSearch}
+                        placeHolder="Search threads"
+                    />
+                    <DraftsDialog />
+                    <Select
+                        value={selectedAssetId || 'all'}
+                        onValueChange={(v) =>
+                            setSelectedAssetId(v === 'all' ? '' : v)
+                        }
+                        disabled={isLoading || isTyping}
+                    >
+                        <SelectTrigger className="type-body h-8 w-fit focus:ring-0">
+                            <SelectValue placeholder="Asset" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Assets</SelectItem>
+                            <Separator className="my-1" />
+                            {assetList.map((a) => (
+                                <SelectItem key={a.id} value={a.id}>
+                                    {a.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <RefreshButton
+                        onClick={getOpenThreads}
+                        disabled={isTyping}
+                        loading={isLoading}
+                    />
                 </div>
             </div>
 
@@ -427,8 +379,8 @@ export default function OpenThreadsPage() {
                                             }}
                                         >
                                             <span
+                                                className="type-micro"
                                                 style={{
-                                                    fontSize: 10.5,
                                                     fontWeight: 700,
                                                     letterSpacing: '0.4px',
                                                     textTransform: 'uppercase',
@@ -441,8 +393,8 @@ export default function OpenThreadsPage() {
                                             </span>
                                             {asset && (
                                                 <span
+                                                    className="type-small"
                                                     style={{
-                                                        fontSize: 12,
                                                         color: 'var(--muted-col)',
                                                         fontWeight: 500,
                                                         overflow: 'hidden',
@@ -455,9 +407,9 @@ export default function OpenThreadsPage() {
                                                 </span>
                                             )}
                                             <span
+                                                className="type-small"
                                                 style={{
                                                     marginLeft: 'auto',
-                                                    fontSize: 11.5,
                                                     color: 'var(--muted-2)',
                                                     flexShrink: 0,
                                                 }}
@@ -468,8 +420,8 @@ export default function OpenThreadsPage() {
 
                                         {/* title */}
                                         <p
+                                            className="type-medium"
                                             style={{
-                                                fontSize: 14.5,
                                                 fontWeight: 600,
                                                 color: 'var(--text)',
                                                 lineHeight: 1.3,
@@ -484,8 +436,8 @@ export default function OpenThreadsPage() {
 
                                         {/* meta line (message count proxy for snippet) */}
                                         <p
+                                            className="type-body"
                                             style={{
-                                                fontSize: 12.5,
                                                 color: 'var(--muted-col)',
                                                 marginTop: 2,
                                                 overflow: 'hidden',
@@ -533,8 +485,8 @@ export default function OpenThreadsPage() {
                             strokeWidth={1.1}
                         />
                         <p
+                            className="type-section"
                             style={{
-                                fontSize: 18,
                                 fontWeight: 300,
                                 color: 'var(--text-strong)',
                             }}
@@ -544,8 +496,8 @@ export default function OpenThreadsPage() {
                                 : 'No open threads'}
                         </p>
                         <p
-                            className="serif"
-                            style={{ fontSize: 15, color: 'var(--muted-col)' }}
+                            className="serif type-medium"
+                            style={{ color: 'var(--muted-col)' }}
                         >
                             Closed threads move to the asset’s history.
                         </p>

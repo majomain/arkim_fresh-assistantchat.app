@@ -64,8 +64,8 @@ export default function ThoughtProcess({
 
                 {/* label */}
                 <span
+                    className="type-body"
                     style={{
-                        fontSize: 13.5,
                         fontWeight: 600,
                         color: 'var(--text)',
                         letterSpacing: '-0.1px',
@@ -77,8 +77,8 @@ export default function ThoughtProcess({
                 {/* summary */}
                 {entries.length > 0 && (
                     <span
+                        className="type-small"
                         style={{
-                            fontSize: 12,
                             color: 'var(--muted-col)',
                             fontWeight: 500,
                         }}
@@ -124,8 +124,8 @@ export default function ThoughtProcess({
                         ))
                     ) : (
                         <p
+                            className="type-body"
                             style={{
-                                fontSize: 13,
                                 color: 'var(--muted-col)',
                                 fontStyle: 'italic',
                             }}
@@ -183,8 +183,8 @@ function StepItem({
             <div style={{ flex: 1, minWidth: 0 }}>
                 {step.title && (
                     <p
+                        className="type-body"
                         style={{
-                            fontSize: 13.5,
                             fontWeight: 600,
                             color: 'var(--text)',
                             lineHeight: 1.35,
@@ -196,8 +196,8 @@ function StepItem({
                 )}
                 {step.content && (
                     <p
+                        className="type-body"
                         style={{
-                            fontSize: 13,
                             color: 'var(--muted-col)',
                             lineHeight: 1.5,
                         }}

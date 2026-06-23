@@ -133,6 +133,7 @@ export default function Detail() {
                     />
                     {/* health badge overlay */}
                     <span
+                        className="type-micro"
                         style={{
                             position: 'absolute',
                             top: 12,
@@ -140,7 +141,6 @@ export default function Detail() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 6,
-                            fontSize: 11,
                             fontWeight: 600,
                             letterSpacing: '0.3px',
                             padding: '4px 10px',
@@ -161,8 +161,8 @@ export default function Detail() {
                 {/* name + descriptor + chips */}
                 <div>
                     <p
+                        className="type-hero"
                         style={{
-                            fontSize: 26,
                             fontWeight: 300,
                             letterSpacing: '-0.4px',
                             color: 'var(--text-strong)',
@@ -172,9 +172,8 @@ export default function Detail() {
                         {a?.name}
                     </p>
                     <p
-                        className="serif"
+                        className="serif type-lead"
                         style={{
-                            fontSize: 17,
                             color: 'var(--muted-col)',
                             marginTop: 4,
                         }}
@@ -247,8 +246,8 @@ export default function Detail() {
                         }}
                     >
                         <p
+                            className="type-micro"
                             style={{
-                                fontSize: 11,
                                 fontWeight: 600,
                                 color: 'var(--muted-2)',
                                 letterSpacing: '0.3px',
@@ -257,11 +256,11 @@ export default function Detail() {
                             {cell.lbl}
                         </p>
                         <p
+                            className="type-medium"
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 6,
-                                fontSize: 15,
                                 fontWeight: 600,
                                 color: 'var(--text)',
                                 marginTop: 4,
@@ -276,8 +275,8 @@ export default function Detail() {
                             {cell.val}
                         </p>
                         <p
+                            className="type-small"
                             style={{
-                                fontSize: 11.5,
                                 color: 'var(--muted-col)',
                                 marginTop: 2,
                             }}
@@ -305,11 +304,11 @@ export default function Detail() {
                     In development
                 </Badge>
                 <p
+                    className="type-micro"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 7,
-                        fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: '0.8px',
                         textTransform: 'uppercase',
@@ -320,9 +319,8 @@ export default function Detail() {
                     Baseline summary
                 </p>
                 <p
-                    className="serif"
+                    className="serif type-title"
                     style={{
-                        fontSize: 16,
                         color: 'var(--muted-col)',
                         marginTop: 8,
                     }}
@@ -334,8 +332,8 @@ export default function Detail() {
                     {['Last baseline', 'Confidence', 'Drift'].map((k) => (
                         <div key={k}>
                             <p
+                                className="type-lead"
                                 style={{
-                                    fontSize: 18,
                                     fontWeight: 300,
                                     color: 'var(--muted-2)',
                                 }}
@@ -343,8 +341,8 @@ export default function Detail() {
                                 —
                             </p>
                             <p
+                                className="type-micro"
                                 style={{
-                                    fontSize: 11,
                                     color: 'var(--muted-2)',
                                     fontWeight: 600,
                                     marginTop: 2,
@@ -363,11 +361,11 @@ export default function Detail() {
                 style={{ padding: '14px 16px' }}
             >
                 <p
+                    className="type-small"
                     style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 7,
-                        fontSize: 12,
                         fontWeight: 600,
                         color: 'var(--attention-text)',
                         marginBottom: 10,

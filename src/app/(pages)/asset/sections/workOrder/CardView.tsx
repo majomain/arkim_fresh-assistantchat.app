@@ -76,27 +76,25 @@ export default function CardView({
                             </p>
                             <Badge
                                 variant="outline"
-                                className={`
-                                border-none ${
-                                    workOrder.status === 'thread_opened'
-                                        ? 'bg-primary/15'
+                                className={cn(
+                                    'border-none',
+                                    workOrder.status === 'open' ||
+                                        workOrder.status === 'thread_opened'
+                                        ? 'bg-primary/15 text-primary'
                                         : workOrder.status === 'completed'
-                                          ? 'bg-success/15'
-                                          : workOrder.status === 'cancelled'
-                                            ? 'bg-destructive/15'
-                                            : 'bg-warning/15'
-                                }`}
+                                          ? 'bg-success/15 text-success'
+                                          : 'bg-muted text-muted-foreground',
+                                )}
                             >
                                 <p
-                                    className={`${
+                                    className={
+                                        workOrder.status === 'open' ||
                                         workOrder.status === 'thread_opened'
                                             ? 'text-primary'
                                             : workOrder.status === 'completed'
                                               ? 'text-success'
-                                              : workOrder.status === 'cancelled'
-                                                ? 'text-destructive'
-                                                : 'text-warning'
-                                    }`}
+                                              : 'text-muted-foreground'
+                                    }
                                 >
                                     {getStatusLabel(workOrder.status)}
                                 </p>

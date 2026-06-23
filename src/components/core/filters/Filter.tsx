@@ -57,8 +57,7 @@ export default function Filter({
             <DropdownMenuTrigger
                 asChild
                 className={cn(
-                    shadowCard &&
-                        'border-1 border-muted bg-card shadow-md shadow-card-shadow rounded-md',
+                    shadowCard && 'border-1 border-muted bg-card rounded-md',
                 )}
             >
                 <Button variant="outline">

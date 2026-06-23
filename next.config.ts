@@ -102,7 +102,7 @@ const cspCategories = {
     'base-uri': ["'self'"],
     'font-src': ["'self'"],
     'form-action': ["'self'"],
-    'img-src': ["'self'", 'blob: data:'],
+    'img-src': ["'self'", 'blob:', 'data:', 'https://assets.arkim.ai'],
     'object-src': ["'none'"],
     'script-src': [
         "'self'",

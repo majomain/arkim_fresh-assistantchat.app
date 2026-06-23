@@ -106,8 +106,8 @@ export default function MobileTabBar() {
                             style={{ color: 'inherit' }}
                         />
                         <span
+                            className="type-micro"
                             style={{
-                                fontSize: 10.5,
                                 fontWeight: active ? 600 : 500,
                                 letterSpacing: '0.2px',
                                 color: 'inherit',
@@ -134,8 +134,8 @@ export default function MobileTabBar() {
                     <ProfileDropdown />
                 </div>
                 <span
+                    className="type-micro"
                     style={{
-                        fontSize: 10.5,
                         fontWeight: 500,
                         letterSpacing: '0.2px',
                         color: 'var(--muted-col)',

@@ -7,7 +7,6 @@ import { Providers } from './providers';
 const mulish = Mulish({
     subsets: ['latin'],
     variable: '--font-mulish',
-    weight: ['300', '400', '500', '600'],
     display: 'swap',
 });
 
@@ -46,7 +45,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning className={mulish.variable}>
-            <body>
+            <body className={mulish.className}>
                 <Providers>{children}</Providers>
             </body>
         </html>

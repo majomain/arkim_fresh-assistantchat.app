@@ -49,9 +49,9 @@ export default function SideBar() {
 
     return user ? (
         <Sidebar variant="sidebar" collapsible="icon">
-            <SidebarHeader className="h-14">
-                <div className="flex items-center justify-between h-full">
-                    <AppLogo className="group-data-[collapsible=icon]:hidden hover:!bg-sidebar-accent" />
+            <SidebarHeader className="sidebar-collapse-header h-14 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:py-1">
+                <div className="sidebar-collapse-header-inner flex items-center justify-between h-full group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-1.5">
+                    <AppLogo className="hover:!bg-sidebar-accent" />
                     <div className="relative">
                         <SidebarTrigger />
                         {state === 'collapsed' &&
@@ -88,10 +88,10 @@ export default function SideBar() {
                                     isActive={cards['onboard']?.open}
                                     tooltip={'New Asset'}
                                 >
-                                    <div className="cursor-pointer">
-                                        <LucideIcons.Plus className="text-muted-foreground" />
+                                    <div className="sidebar-collapse-item cursor-pointer">
+                                        <LucideIcons.Plus className="size-4 shrink-0 text-muted-foreground" />
 
-                                        <span className="group-data-[collapsible=icon]:hidden text-foreground">
+                                        <span className="sidebar-collapse-text text-foreground">
                                             New Asset
                                         </span>
                                     </div>
@@ -120,12 +120,12 @@ export default function SideBar() {
                                                         toggleSidebar();
                                                 }}
                                                 href={item.href}
-                                                className="flex items-center gap-2 w-full justify-between"
+                                                className="sidebar-collapse-item w-full justify-between group-data-[collapsible=icon]:justify-center"
                                             >
-                                                <div className="flex flex-row items-center gap-2">
-                                                    <IconComponent className="size-4" />
+                                                <div className="sidebar-collapse-item">
+                                                    <IconComponent className="size-4 shrink-0" />
 
-                                                    <span className="group-data-[collapsible=icon]:hidden text-foreground">
+                                                    <span className="sidebar-collapse-text text-foreground">
                                                         {item.title}
                                                     </span>
                                                 </div>
@@ -137,7 +137,7 @@ export default function SideBar() {
                                                 !pathName.includes(
                                                     item.href,
                                                 ) ? (
-                                                    <span className="text-xs bg-sidebar-primary text-sidebar-primary-foreground px-1.5 py-0.5 rounded-full">
+                                                    <span className="sidebar-collapse-text text-xs bg-sidebar-primary text-sidebar-primary-foreground px-1.5 py-0.5 rounded-full">
                                                         {draftCount}
                                                     </span>
                                                 ) : null}
@@ -147,14 +147,14 @@ export default function SideBar() {
                                 );
                             })}
 
-                            <Separator className="group-data-[collapsible=icon]:hidden" />
+                            <Separator className="sidebar-collapse-section" />
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
 
                 <div
                     className={cn(
-                        'flex flex-row justify-between itemc-center px-3 group-data-[collapsible=icon]:hidden',
+                        'sidebar-collapse-section flex flex-row justify-between itemc-center px-3',
                     )}
                 >
                     <p className="text-xs font-semibold text-sidebar-foreground/60">
@@ -183,7 +183,7 @@ export default function SideBar() {
 
                 <div
                     className={cn(
-                        'max-h-full overflow-auto px-2 pb-2 group-data-[collapsible=icon]:hidden',
+                        'sidebar-collapse-section max-h-full overflow-auto px-2 pb-2',
                     )}
                 >
                     <ThreadList />
@@ -196,10 +196,10 @@ export default function SideBar() {
                         <SidebarMenuButton tooltip="Back to Company">
                             <Link
                                 href="/company-select"
-                                className="flex items-center gap-2 w-full"
+                                className="sidebar-collapse-item w-full"
                             >
-                                <LucideIcons.ArrowLeftFromLine className="size-4" />
-                                <span className="group-data-[collapsible=icon]:hidden">
+                                <LucideIcons.ArrowLeftFromLine className="size-4 shrink-0" />
+                                <span className="sidebar-collapse-text">
                                     Back to Company
                                 </span>
                             </Link>

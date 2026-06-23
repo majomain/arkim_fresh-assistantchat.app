@@ -132,7 +132,9 @@ export default function RecentOpenThreads() {
     return (
         <>
             <div className="flex items-center justify-between mt-10">
-                <p className="text-xl font-semibold">Recent Open threads</p>
+                <p className="type-section font-semibold">
+                    Recent Open threads
+                </p>
 
                 <div className="flex flex-row gap-5 items-center">
                     {!loadingRecentOpenThreads &&
@@ -188,7 +190,7 @@ export default function RecentOpenThreads() {
                             return (
                                 <Card
                                     key={thread.threadId}
-                                    className="cursor-pointer hover:shadow-none"
+                                    className="card-hover-subtle cursor-pointer overflow-hidden"
                                     onClick={() =>
                                         router.push(
                                             `/thread/?id=${thread.threadId}`,

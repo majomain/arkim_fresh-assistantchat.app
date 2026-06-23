@@ -3,7 +3,6 @@
 import { useAuth } from '@/hooks/use-auth';
 import clsx, { type ClassValue } from 'clsx';
 import { useTheme } from 'next-themes';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -13,23 +12,26 @@ import { emitHomePageVisited } from '@/utils/page-events';
 import { Button } from '../ui/button';
 import { useSidebar } from '../ui/sidebar';
 
+const COLLAPSED_LOGO_URL = 'https://assets.arkim.ai/arkim-logo-email-98px.png';
+
 export const AppLogo = ({ className }: { className?: ClassValue }) => {
-    // flag for component mount
     const [mounted, setMounted] = useState(false);
-    // get the current resolved theme
     const { resolvedTheme } = useTheme();
-    // sidebar utils
-    const { isMobile, toggleSidebar } = useSidebar();
+    const { isMobile, toggleSidebar, state } = useSidebar();
     const { user } = useAuth();
+    const isCollapsed = state === 'collapsed' && !isMobile;
 
     useEffect(() => setMounted(true), []);
 
-    // flag for dark mode after mount to avoid hydration problems
     const isDark = mounted ? resolvedTheme === 'dark' : null;
+    const expandedLogoSrc = buildLogosPath(
+        isDark ? 'logo-dark.svg' : 'logo-light.svg',
+    );
 
     return (
         <Link
             href="/"
+            aria-label="Arkim home"
             onClick={() => {
                 emitHomePageVisited();
                 if (isMobile) toggleSidebar();
@@ -37,20 +39,33 @@ export const AppLogo = ({ className }: { className?: ClassValue }) => {
         >
             <Button
                 id="app-logo"
-                variant={'ghost'}
+                variant="ghost"
                 className={clsx(
-                    'max-w-fit p-0 px-1',
+                    'max-w-fit p-0 px-1 transition-[width,height,padding,max-width] duration-[var(--sidebar-transition-duration)] ease-[var(--sidebar-transition-timing)]',
+                    isCollapsed &&
+                        'size-8 min-w-8 max-w-8 overflow-hidden rounded-md p-0',
                     !user && '!bg-transparent',
                     className,
                 )}
             >
-                <img
-                    src={buildLogosPath(
-                        isDark ? 'logo-dark.svg' : 'logo-light.svg',
+                <span
+                    className={clsx(
+                        'app-logo-mark',
+                        isCollapsed && 'app-logo-mark--collapsed',
                     )}
-                    className="block w-auto h-7"
-                    alt="Arkim logo"
-                />
+                    aria-hidden
+                >
+                    <img
+                        src={expandedLogoSrc}
+                        className="app-logo-mark__full"
+                        alt=""
+                    />
+                    <img
+                        src={COLLAPSED_LOGO_URL}
+                        className="app-logo-mark__compact"
+                        alt=""
+                    />
+                </span>
             </Button>
         </Link>
     );

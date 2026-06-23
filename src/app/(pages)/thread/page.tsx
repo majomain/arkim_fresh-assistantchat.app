@@ -290,11 +290,11 @@ export default function ThreadPage() {
                                         {/* Report — sage/checkCircle treatment */}
                                         <button
                                             onClick={() => loadDialog('report')}
+                                            className="type-body"
                                             style={{
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 gap: 6,
-                                                fontSize: 14,
                                                 fontWeight: 600,
                                                 padding: '9px 16px',
                                                 borderRadius: 3,
@@ -313,11 +313,11 @@ export default function ThreadPage() {
                                         {/* Close — neutral/quiet */}
                                         <button
                                             onClick={() => loadDialog('close')}
+                                            className="type-body"
                                             style={{
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 gap: 6,
-                                                fontSize: 14,
                                                 fontWeight: 600,
                                                 padding: '9px 16px',
                                                 borderRadius: 3,
@@ -337,11 +337,11 @@ export default function ThreadPage() {
                                                 onClick={() =>
                                                     setWorkOrderDialogOpen(true)
                                                 }
+                                                className="type-body"
                                                 style={{
                                                     display: 'inline-flex',
                                                     alignItems: 'center',
                                                     gap: 6,
-                                                    fontSize: 14,
                                                     fontWeight: 600,
                                                     padding: '9px 16px',
                                                     borderRadius: 3,
@@ -376,8 +376,8 @@ export default function ThreadPage() {
                                         >
                                             <DialogHeader>
                                                 <DialogTitle
+                                                    className="type-title"
                                                     style={{
-                                                        fontSize: 16,
                                                         fontWeight: 600,
                                                         color: 'var(--text-strong)',
                                                         textAlign: 'left',
@@ -388,8 +388,8 @@ export default function ThreadPage() {
                                                 <DialogDescription />
                                             </DialogHeader>
                                             <p
+                                                className="type-body"
                                                 style={{
-                                                    fontSize: 14,
                                                     color: 'var(--text)',
                                                     lineHeight: 1.55,
                                                     marginTop: 2,
@@ -403,8 +403,8 @@ export default function ThreadPage() {
                                                 ?
                                             </p>
                                             <p
+                                                className="type-body"
                                                 style={{
-                                                    fontSize: 13,
                                                     color: 'var(--muted-col)',
                                                     marginTop: 6,
                                                     lineHeight: 1.5,

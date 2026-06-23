@@ -53,7 +53,7 @@ export default function AttachmentsDialog({
                 >
                     {/* Panel */}
                     <div
-                        className="relative bg-background rounded-lg shadow-lg w-full max-w-lg flex flex-col p-6 mx-2 gap-4"
+                        className="relative bg-background border rounded-lg w-full max-w-lg flex flex-col p-6 mx-2 gap-4"
                         onMouseDown={(e) => e.stopPropagation()}
                     >
                         {/* Header */}

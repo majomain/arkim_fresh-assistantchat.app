@@ -7,7 +7,7 @@ import { Factory } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select';
-import { useSidebar } from '../ui/sidebar';
+import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '../ui/sidebar';
 
 export default function LocationSelector() {
     // sidebar utils
@@ -22,22 +22,35 @@ export default function LocationSelector() {
         }
     });
 
+    const isIconOnly = state === 'collapsed' && !isMobile;
+    const locationLabel = selectedLocation?.name || 'Select location';
+
+    const handleValueChange = (value: string) => {
+        selectLocation(value);
+        locationUpdated(value);
+    };
+
     return (
-        (state === 'expanded' || isMobile) && (
+        <SidebarMenuItem>
             <Select
                 value={selectedLocation?.id || ''}
-                onValueChange={(value) => {
-                    selectLocation(value);
-                    locationUpdated(value);
-                }}
+                onValueChange={handleValueChange}
                 disabled={isLoadingLocations || locations.length === 0}
             >
-                <SelectTrigger className="w-full h-9 font-medium text-sm focus:ring-0">
-                    <p className="flex flex-row items-center gap-1">
-                        <Factory />
-                        {selectedLocation?.name}
-                    </p>
-                </SelectTrigger>
+                {isIconOnly ? (
+                    <SidebarMenuButton tooltip={locationLabel} asChild>
+                        <SelectTrigger className="sidebar-collapse-item h-8 w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 [&>svg:last-child]:hidden">
+                            <Factory className="size-4 shrink-0" />
+                        </SelectTrigger>
+                    </SidebarMenuButton>
+                ) : (
+                    <SelectTrigger className="w-full h-9 font-medium text-sm focus:ring-0">
+                        <p className="flex flex-row items-center gap-2">
+                            <Factory className="size-4 shrink-0" />
+                            {selectedLocation?.name}
+                        </p>
+                    </SelectTrigger>
+                )}
                 <SelectContent>
                     {locations.map((location) => (
                         <SelectItem
@@ -63,6 +76,6 @@ export default function LocationSelector() {
                     ))}
                 </SelectContent>
             </Select>
-        )
+        </SidebarMenuItem>
     );
 }

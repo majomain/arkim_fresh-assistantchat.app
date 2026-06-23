@@ -21,8 +21,7 @@ export default function Search({
         <div
             className={cn(
                 'flex items-center gap-2 rounded-lg px-3 py-1 bg-card border-1',
-                shadowCard &&
-                    'border-1 border-muted bg-card shadow-md shadow-card-shadow rounded-md',
+                shadowCard && 'border-1 border-muted bg-card rounded-md',
                 className ?? '',
             )}
         >

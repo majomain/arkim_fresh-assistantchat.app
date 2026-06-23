@@ -60,7 +60,7 @@ function NotificationPopover() {
             </PopoverTrigger>
 
             <PopoverContent
-                className="w-[350px] sm:w-[380px] p-0 shadow-xl"
+                className="w-[350px] sm:w-[380px] p-0"
                 align="end"
                 sideOffset={8}
             >

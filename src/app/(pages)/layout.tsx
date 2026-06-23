@@ -20,6 +20,18 @@ import { requestNotificationPermission } from '@/utils/web-notification';
 
 import { cn } from '@/lib/utils';
 
+/** Main list pages embed title + nav in PageTopBar instead of the global Header. */
+function usesPageTopBar(pathname: string): boolean {
+    if (pathname === '/') return true;
+    return [
+        '/work-orders',
+        '/open-threads',
+        '/assets',
+        '/analytics',
+        '/drafts',
+    ].some((p) => pathname.startsWith(p));
+}
+
 export default function AuthenticatedLayout({
     children,
 }: {
@@ -70,7 +82,7 @@ export default function AuthenticatedLayout({
                             <>
                                 <SideBar />
                                 <div className="flex flex-col w-full">
-                                    <Header />
+                                    {!usesPageTopBar(pathname) && <Header />}
                                     <div
                                         className={cn(
                                             !pathname.includes('/thread') &&

@@ -30,7 +30,7 @@ interface ToastProps {
 
 const ErrorToast = ({ description, title }: ToastProps) => {
     return (
-        <div className="border-1 border-muted bg-card shadow-md shadow-card-shadow flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
+        <div className="border-1 border-muted bg-card flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
             <XCircle
                 className="size-5 text-destructive font-bold"
                 strokeWidth={2}
@@ -50,7 +50,7 @@ const ErrorToast = ({ description, title }: ToastProps) => {
 
 const SuccessToast = ({ description, title }: ToastProps) => {
     return (
-        <div className="border-1 border-muted bg-card shadow-md shadow-card-shadow flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
+        <div className="border-1 border-muted bg-card flex items-center justify-between gap-3 rounded-lg p-4 md:max-w-[364px]">
             <CheckCircle2
                 className="size-5 text-success font-bold"
                 strokeWidth={2}

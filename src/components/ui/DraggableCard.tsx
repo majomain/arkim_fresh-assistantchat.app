@@ -120,7 +120,7 @@ export default function DraggableCard({
                 if (draggable) handleTouchStart(e);
             }}
             className={cn(
-                'fixed border bg-card shadow-lg rounded-lg py-3 z-10',
+                'fixed border bg-card rounded-lg py-3 z-10',
                 draggable
                     ? 'cursor-grab'
                     : 'left-1/2 -translate-x-1/2 bottom-0 sm:left-auto sm:translate-none sm:right-1 border-b-0 rounded-b-none',

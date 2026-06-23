@@ -88,7 +88,7 @@ export default function ResponseNotification() {
                 return (
                     <Card
                         key={responseAlert.id}
-                        className={`surface-attention surface-attention--bar shadow-lg p-2.5 cursor-pointer transform transition-all duration-300 ease-out
+                        className={`surface-attention surface-attention--bar p-2.5 cursor-pointer transform transition-all duration-300 ease-out
                             ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-30 opacity-0'}`}
                         onClick={() =>
                             handleCardClick(

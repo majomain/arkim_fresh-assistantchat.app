@@ -7,9 +7,10 @@ import messagingService from '@/services/api/messagingService';
 import workOrderService from '@/services/api/workOrderService';
 import { ThreadDetailList } from '@/types/equipment/thread';
 import { WorkOrderDetailList } from '@/types/workOrder/workOrder';
-import { RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import RefreshButton from '@/components/core/RefreshButton';
+import PageTopBar from '@/components/layout/PageTopBar';
 import { errorToast } from '@/components/ui/sonner';
 
 // ── Period helpers ────────────────────────────────────────────────────────────
@@ -261,39 +262,10 @@ export default function AnalyticsPage() {
     );
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: 'calc(100dvh - 4.5rem)',
-            }}
-        >
-            {/* ── Top bar ───────────────────────────────────────────────────── */}
-            <div
-                style={{
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '12px 4px',
-                    borderBottom: '1px solid var(--border-col)',
-                }}
-            >
-                <div style={{ flex: 1 }}>
-                    <p
-                        style={{
-                            fontSize: 18,
-                            fontWeight: 600,
-                            letterSpacing: '-0.2px',
-                            color: 'var(--text-strong)',
-                            lineHeight: 1.2,
-                        }}
-                    >
-                        Analytics
-                    </p>
-                </div>
+        <div className="flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-1.25rem)]">
+            <PageTopBar title="Analytics" />
 
-                {/* Period toggle */}
+            <div className="flex-shrink-0 flex items-center justify-end gap-3 px-1 pb-2.5">
                 <div
                     style={{
                         display: 'flex',
@@ -307,8 +279,8 @@ export default function AnalyticsPage() {
                         <button
                             key={p}
                             onClick={() => setPeriod(p)}
+                            className="type-body"
                             style={{
-                                fontSize: 12.5,
                                 fontWeight: 600,
                                 padding: '5px 12px',
                                 borderRadius: 2,
@@ -334,30 +306,7 @@ export default function AnalyticsPage() {
                     ))}
                 </div>
 
-                {/* Refresh */}
-                <button
-                    onClick={fetchData}
-                    disabled={loading}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 32,
-                        height: 32,
-                        borderRadius: 3,
-                        border: '1px solid var(--border-col)',
-                        background: 'transparent',
-                        color: 'var(--muted-col)',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        opacity: loading ? 0.5 : 1,
-                    }}
-                    title="Refresh"
-                >
-                    <RefreshCw
-                        size={14}
-                        className={loading ? 'animate-spin' : ''}
-                    />
-                </button>
+                <RefreshButton onClick={fetchData} loading={loading} />
             </div>
 
             {/* ── Scrollable content ────────────────────────────────────────── */}
@@ -434,8 +383,8 @@ export default function AnalyticsPage() {
                                     <Sk w={52} h={36} />
                                 ) : (
                                     <p
+                                        className="type-display-lg"
                                         style={{
-                                            fontSize: 34,
                                             fontWeight: 200,
                                             letterSpacing: '-1px',
                                             color: 'var(--text-strong)',
@@ -446,8 +395,8 @@ export default function AnalyticsPage() {
                                     </p>
                                 )}
                                 <p
+                                    className="type-small"
                                     style={{
-                                        fontSize: 12,
                                         color: 'var(--muted-col)',
                                         marginTop: 8,
                                         fontWeight: 600,
@@ -457,11 +406,11 @@ export default function AnalyticsPage() {
                                 </p>
                                 {!loading && deltaText && (
                                     <p
+                                        className="type-small"
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: 5,
-                                            fontSize: 11.5,
                                             fontWeight: 600,
                                             marginTop: 6,
                                             color: good
@@ -510,8 +459,8 @@ export default function AnalyticsPage() {
                             }}
                         >
                             <p
+                                className="type-body"
                                 style={{
-                                    fontSize: 13,
                                     fontWeight: 700,
                                     letterSpacing: '1px',
                                     textTransform: 'uppercase',
@@ -521,8 +470,8 @@ export default function AnalyticsPage() {
                                 Completions
                             </p>
                             <p
+                                className="type-micro"
                                 style={{
-                                    fontSize: 11,
                                     color: 'var(--muted-col)',
                                     fontWeight: 600,
                                 }}
@@ -582,8 +531,8 @@ export default function AnalyticsPage() {
                                           >
                                               {/* value label */}
                                               <span
+                                                  className="type-micro"
                                                   style={{
-                                                      fontSize: 11,
                                                       fontWeight: 600,
                                                       color:
                                                           b.value === 0
@@ -622,8 +571,8 @@ export default function AnalyticsPage() {
                                               </div>
                                               {/* day label */}
                                               <span
+                                                  className="type-micro"
                                                   style={{
-                                                      fontSize: 11,
                                                       fontWeight: 600,
                                                       color: 'var(--muted-col)',
                                                       letterSpacing: '0.2px',
@@ -647,8 +596,8 @@ export default function AnalyticsPage() {
                         }}
                     >
                         <p
+                            className="type-body"
                             style={{
-                                fontSize: 13,
                                 fontWeight: 700,
                                 letterSpacing: '1px',
                                 textTransform: 'uppercase',
@@ -701,8 +650,8 @@ export default function AnalyticsPage() {
                                                 style={{ flex: 1, minWidth: 0 }}
                                             >
                                                 <p
+                                                    className="type-body"
                                                     style={{
-                                                        fontSize: 13.5,
                                                         fontWeight: 600,
                                                         color: 'var(--text)',
                                                         lineHeight: 1.3,
@@ -712,8 +661,8 @@ export default function AnalyticsPage() {
                                                 </p>
                                                 {a.loc && (
                                                     <p
+                                                        className="type-small"
                                                         style={{
-                                                            fontSize: 11.5,
                                                             color: 'var(--muted-col)',
                                                             marginTop: 1,
                                                             fontWeight: 500,
@@ -744,8 +693,8 @@ export default function AnalyticsPage() {
                                                 />
                                             </div>
                                             <span
+                                                className="type-body"
                                                 style={{
-                                                    fontSize: 13,
                                                     fontWeight: 600,
                                                     color: 'var(--text)',
                                                     minWidth: 20,
@@ -761,11 +710,8 @@ export default function AnalyticsPage() {
                             </div>
                         ) : (
                             <p
-                                className="serif"
-                                style={{
-                                    fontSize: 14,
-                                    color: 'var(--muted-col)',
-                                }}
+                                className="serif type-body"
+                                style={{ color: 'var(--muted-col)' }}
                             >
                                 No asset activity in this period.
                             </p>
@@ -780,8 +726,8 @@ export default function AnalyticsPage() {
                     ranked.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '40px 0' }}>
                             <p
+                                className="type-title"
                                 style={{
-                                    fontSize: 16,
                                     fontWeight: 300,
                                     color: 'var(--text-strong)',
                                 }}
@@ -789,9 +735,8 @@ export default function AnalyticsPage() {
                                 No activity yet
                             </p>
                             <p
-                                className="serif"
+                                className="serif type-medium"
                                 style={{
-                                    fontSize: 15,
                                     color: 'var(--muted-col)',
                                     marginTop: 6,
                                 }}

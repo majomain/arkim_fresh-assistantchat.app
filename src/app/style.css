@@ -241,7 +241,7 @@
     font-family: var(--font-sans);
     font-style: normal;
     font-weight: 400;
-    font-size: 17px;
+    font-size: var(--text-medium);
     color: var(--muted-col);
     letter-spacing: 0.2px;
 }
@@ -253,7 +253,7 @@
 .loader-inline .li-label {
     font-family: var(--font-sans);
     font-style: normal;
-    font-size: 15px;
+    font-size: var(--text-medium);
     color: var(--muted-col);
 }
 .loader-pct {
@@ -263,7 +263,7 @@
     gap: 6px;
 }
 .loader-pct .lp-num {
-    font-size: 26px;
+    font-size: var(--page-header-size);
     font-weight: 200;
     letter-spacing: -0.5px;
     color: var(--text-strong);
@@ -271,7 +271,7 @@
 }
 .loader-pct .lp-num b {
     font-weight: 400;
-    font-size: 15px;
+    font-size: var(--text-medium);
     color: var(--muted-col);
     margin-left: 1px;
 }

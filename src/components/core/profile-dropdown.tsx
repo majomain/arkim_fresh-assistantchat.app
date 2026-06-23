@@ -81,7 +81,7 @@ export const ProfileDropdown = () => {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 bg-[#84B7C8] text-black rounded-full hover:rounded-md hover:bg-[#84B7C8]"
+                    className="h-8 w-8 bg-primary text-primary-foreground rounded-full hover:rounded-md hover:bg-primary"
                 >
                     <Avatar>
                         <AvatarFallback>{getUserInitials()}</AvatarFallback>

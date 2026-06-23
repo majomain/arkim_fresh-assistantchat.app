@@ -54,10 +54,10 @@ export default function GlobalSearchDialog() {
                 className="w-full cursor-pointer rounded-md hover:bg-sidebar-accent"
                 asChild
             >
-                <div className="w-full flex flex-row items-center gap-2 px-2 py-1.5 group/search">
-                    <SearchIcon className="!text-muted-foreground size-4 group-hover/search:!text-foreground" />
+                <div className="sidebar-collapse-item w-full h-8 px-2 py-1.5 group/search">
+                    <SearchIcon className="size-4 shrink-0 !text-muted-foreground group-hover/search:!text-foreground" />
 
-                    <span className="group-data-[collapsible=icon]:hidden text-foreground">
+                    <span className="sidebar-collapse-text text-foreground">
                         Search
                     </span>
                 </div>
